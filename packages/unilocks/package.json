@@ -1,0 +1,23 @@
+{
+  "name": "unilocks",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "clean": "del-cli build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
+    "pretest": "pnpm lint",
+    "test": "c8 pnpm quick:test",
+    "build": "tsup-node",
+    "postbuild": "pnpm copy:templates",
+    "release": "pnpm build && pnpm release-it",
+    "version": "pnpm build",
+    "prepublishOnly": "pnpm build",
+    "checks": "pnpm lint && pnpm typecheck"
+  },
+  "keywords": [],
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "ISC"
+}
