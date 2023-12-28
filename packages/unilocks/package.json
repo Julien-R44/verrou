@@ -19,5 +19,13 @@
   },
   "keywords": [],
   "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@poppinss/utils": "^6.7.0",
+    "async-mutex": "^0.4.0",
+    "ioredis": "^5.3.2"
+  },
+  "peerDependencies": {
+    "ioredis": "^5.3.2"
+  }
 }

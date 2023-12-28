@@ -1,6 +1,7 @@
 {
   "name": "@unilocks/monorepo",
   "description": "Unilocks monorepo",
+  "type": "module",
   "version": "0.0.0",
   "engines": {
     "node": ">=18.16.0"
