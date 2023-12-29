@@ -1,8 +1,10 @@
 {
-  "name": "@unilocks/monorepo",
-  "description": "Unilocks monorepo",
+  "name": "@verrou/monorepo",
   "type": "module",
   "version": "0.0.0",
+  "description": "verrou monorepo",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "MIT",
   "engines": {
     "node": ">=18.16.0"
   },
@@ -31,7 +33,5 @@
     "tsup": "^8.0.1",
     "typescript": "~5.2.2"
   },
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "MIT",
   "prettier": "@julr/tooling-configs/prettier"
 }

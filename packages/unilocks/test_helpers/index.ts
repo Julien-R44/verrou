@@ -1,7 +1,8 @@
 import type { Group } from '@japa/runner/core'
 import type { test as JapaTest } from '@japa/runner'
+import { setTimeout as sleep } from 'node:timers/promises'
 
-import type { MutexProvider } from '../src/index.js'
+import type { MutexProvider } from '../src/types.js'
 
 export const BASE_URL = new URL('./tmp/', import.meta.url)
 
@@ -92,5 +93,100 @@ export function registerDriverTestSuite<T extends { new (options: any): MutexPro
 
       await lock.acquire()
     }).throws('Lock was not acquired in the given timeout ( 100 ms )')
+
+    test('run passes result', async ({ assert }) => {
+      const provider = new mutexProvider(config)
+      const lock = provider.createLock('foo')
+
+      const result = await lock.run(async () => 'hello world')
+
+      assert.equal(result, 'hello world')
+    })
+
+    test('run passes result from a promise', async ({ assert }) => {
+      const provider = new mutexProvider(config)
+      const lock = provider.createLock('foo')
+
+      const result = await lock.run(async () => Promise.resolve('hello world'))
+
+      assert.equal(result, 'hello world')
+    })
+
+    test('run passes rejection', async ({ assert }) => {
+      const provider = new mutexProvider(config)
+      const lock = provider.createLock('foo')
+
+      await assert.rejects(
+        async () =>
+          lock.run(async () => {
+            return Promise.reject(new Error('hello world'))
+          }),
+        'hello world',
+      )
+    })
+
+    test('run passes exceptions', async ({ assert }) => {
+      const provider = new mutexProvider(config)
+      const lock = provider.createLock('foo')
+
+      await assert.rejects(async () => {
+        return await lock.run(() => {
+          throw new Error('hello world')
+        })
+      }, 'hello world')
+    })
+
+    test('run is exclusive', async ({ assert }) => {
+      const provider = new mutexProvider(config)
+      const lock = provider.createLock('foo')
+
+      let flag = false
+      lock.run(async () => {
+        await sleep(500)
+        flag = true
+      })
+
+      assert.isFalse(flag)
+
+      const result = await lock.run(async () => {
+        assert.isTrue(flag)
+        return '42'
+      })
+
+      assert.isTrue(flag)
+      assert.equal(result, '42')
+    })
+
+    test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+      const provider = new mutexProvider(config)
+      const lock = provider.createLock('foo')
+      let flag = false
+
+      lock
+        .run(async () => {
+          flag = true
+          throw new Error('hello world')
+        })
+        .catch(() => undefined)
+
+      assert.isFalse(flag)
+      await lock.run(async () => undefined)
+      assert.isTrue(flag)
+    })
+
+    test('multiple calls to release behave as expected', async ({ assert }) => {
+      let v = 0
+      const provider = new mutexProvider(config)
+      const lock = provider.createLock('foo')
+
+      const run = async () => {
+        await lock.acquire()
+        v++
+        await lock.release()
+      }
+
+      await Promise.all([run(), run(), run()])
+      assert.deepEqual(v, 3)
+    })
   })
 }

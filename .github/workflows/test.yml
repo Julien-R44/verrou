@@ -80,6 +80,25 @@ jobs:
         image: redis:6.2-alpine
         ports:
           - 6379:6379
+      dynamodb:
+        image: amazon/dynamodb-local
+        ports:
+          - 8000:8000
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mysql
+        ports:
+          - 3306:3306
 
     steps:
     - uses: actions/checkout@v4
