@@ -69,7 +69,7 @@ jobs:
       run: pnpm install
 
     - name: Build
-      run: pnpm -C packages/unilocks build
+      run: pnpm -C packages/verrou build
 
   tests:
     runs-on: ubuntu-latest
