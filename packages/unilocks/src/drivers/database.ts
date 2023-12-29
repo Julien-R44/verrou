@@ -2,7 +2,7 @@ import knex, { type Knex } from 'knex'
 import { setTimeout } from 'node:timers/promises'
 
 import { E_LOCK_TIMEOUT, E_RELEASE_NOT_OWNED } from '../errors.js'
-import type { DialectName, MutexLock, MutexProvider } from '../types.js'
+import type { DialectName, MutexLock, MutexProvider } from '../types/main.js'
 
 export type DatabaseMutexProviderOptions = {
   dialect: DialectName

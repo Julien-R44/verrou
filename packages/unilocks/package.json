@@ -6,6 +6,11 @@
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "ISC",
   "keywords": [],
+  "exports": {
+    ".": "./build/index.js",
+    "./drivers/*": "./build/drivers/*.js",
+    "./types": "./build/src/types/main.js"
+  },
   "scripts": {
     "clean": "del-cli build",
     "typecheck": "tsc --noEmit",
@@ -40,5 +45,17 @@
     "mysql2": "^3.6.5",
     "pg": "^8.11.3",
     "sqlite3": "^5.1.6"
+  },
+  "tsup": {
+    "entry": [
+      "./index.ts",
+      "./src/types/main.ts",
+      "./drivers/*.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "dts": true,
+    "target": "esnext"
   }
 }

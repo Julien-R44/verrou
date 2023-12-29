@@ -2,7 +2,7 @@ import { Redis as IoRedis } from 'ioredis'
 import { setTimeout } from 'node:timers/promises'
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 
-import type { MutexLock, MutexProvider } from '../types.js'
+import type { MutexLock, MutexProvider } from '../types/main.js'
 import { E_RELEASE_NOT_OWNED, E_LOCK_TIMEOUT } from '../errors.js'
 
 export class RedisMutexLock implements MutexLock {

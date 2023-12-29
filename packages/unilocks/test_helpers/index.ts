@@ -2,7 +2,7 @@ import type { Group } from '@japa/runner/core'
 import type { test as JapaTest } from '@japa/runner'
 import { setTimeout as sleep } from 'node:timers/promises'
 
-import type { MutexProvider } from '../src/types.js'
+import type { MutexProvider } from '../src/types/main.js'
 
 export const BASE_URL = new URL('./tmp/', import.meta.url)
 

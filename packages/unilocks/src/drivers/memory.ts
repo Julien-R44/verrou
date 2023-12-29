@@ -1,7 +1,7 @@
 import type { MutexInterface } from 'async-mutex'
 import { Mutex, withTimeout, E_TIMEOUT } from 'async-mutex'
 
-import type { MutexLock, MutexProvider } from '../types.js'
+import type { MutexLock, MutexProvider } from '../types/main.js'
 import { E_LOCK_TIMEOUT, E_RELEASE_NOT_OWNED } from '../errors.js'
 
 export class MemoryMutexProvider implements MutexProvider {
