@@ -22,6 +22,27 @@ Simply because there is no alternative in the Javascript Ecosystem. Main goal of
 
 We also provide a modern API, using `async/await` and `using` to make your code sexy and easy to read.
 
+## Basic usage
+
+```ts
+import { Verrou } from 'verrou'
+import { redisStore } from 'verrou/drivers/redis'
+import { memoryStore } from 'verrou/drivers/memory'
+
+const lock = new Verrou({
+  default: 'redis',
+  drivers: {
+    redis: redisStore(),
+    memory: memoryStore()
+  }
+})
+
+// Lock a resource
+await lock.createLock('my-resource').run(async () => {
+  await doSomething()
+}) // Lock is automatically released after the callback
+```
+
 ## Sponsor 
 
 If you like this project, [please consider supporting it by sponsoring it](https://github.com/sponsors/Julien-R44/). It will help a lot to maintain and improve it. Thanks a lot !
