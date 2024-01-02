@@ -173,6 +173,12 @@ importers:
         specifier: ^5.1.6
         version: 5.1.6
 
+  playground:
+    dependencies:
+      verrou:
+        specifier: workspace:*
+        version: link:../packages/verrou
+
 packages:
 
   /@aashutoshrathi/word-wrap@1.2.6:
