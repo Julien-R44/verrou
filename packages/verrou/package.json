@@ -26,6 +26,7 @@
     "checks": "pnpm lint && pnpm typecheck"
   },
   "peerDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.484.0",
     "ioredis": "^5.3.2",
     "knex": "^3.1.0"
   },
@@ -41,6 +42,7 @@
     "@lukeed/ms": "^2.0.2"
   },
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.484.0",
     "@poppinss/utils": "^6.7.0",
     "async-mutex": "^0.4.0",
     "ioredis": "^5.3.2",
