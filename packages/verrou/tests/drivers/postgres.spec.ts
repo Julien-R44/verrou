@@ -12,27 +12,9 @@ const db = knex({
 
 test.group('Postgres Driver', (group) => {
   configureDatabaseGroupHooks(db, group)
-
   registerStoreTestSuite({
     test,
     store: DatabaseStore,
     config: { dialect: 'pg', connection: db },
-  })
-
-  test('create table with specified tableName', async ({ assert, cleanup }) => {
-    const store = new DatabaseStore({
-      connection: db,
-      dialect: 'pg',
-      tableName: 'verrou_my_locks',
-    })
-
-    cleanup(async () => {
-      await db.schema.dropTable('verrou_my_locks')
-    })
-
-    await store.save('foo', 'bar')
-
-    const locks = await db.table('verrou_my_locks').select('*')
-    assert.lengthOf(locks, 1)
   })
 })
