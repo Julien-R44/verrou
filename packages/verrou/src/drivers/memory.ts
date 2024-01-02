@@ -54,4 +54,8 @@ export class MemoryStore implements LockStore {
     const mutex = this.getOrCreateForKey(key)
     return mutex.isLocked()
   }
+
+  async disconnect() {
+    // noop
+  }
 }

@@ -14,4 +14,8 @@ export class LockFactory {
   createLock(name: string) {
     return new Lock(name, this.store, this.#config)
   }
+
+  disconnect() {
+    return this.store.disconnect()
+  }
 }

@@ -134,4 +134,8 @@ export class DynamoDBStore implements LockStore {
   async extend(_key: string, _duration: Duration) {
     throw new Error('Method not implemented.')
   }
+
+  async disconnect() {
+    this.#client.destroy()
+  }
 }

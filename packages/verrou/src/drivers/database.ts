@@ -122,4 +122,8 @@ export class DatabaseStore implements LockStore {
     if (!result) return false
     return result.expiration > Date.now()
   }
+
+  disconnect() {
+    return this.#connection.destroy()
+  }
 }

@@ -67,4 +67,9 @@ export interface LockStore {
    * Extend the lock expiration
    */
   extend(key: string, duration: Duration): Promise<void>
+
+  /**
+   * Disconnect the store
+   */
+  disconnect(): Promise<void>
 }
