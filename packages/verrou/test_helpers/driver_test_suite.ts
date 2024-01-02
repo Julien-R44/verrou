@@ -177,4 +177,27 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
     await Promise.all([run(), run(), run()])
     assert.deepEqual(v, 3)
   })
+
+  test('get lock owner', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+
+    assert.isString(lock.getOwner())
+  })
+
+  test('restore lock from another instance', async ({ assert }) => {
+    const storeInstance = new store(config)
+    const provider = new LockFactory(storeInstance)
+    const lock = provider.createLock('foo')
+
+    await lock.acquire()
+
+    const provider2 = new LockFactory(storeInstance)
+    const lock2 = provider2.restoreLock('foo', lock.getOwner())
+
+    assert.isTrue(await lock2.isLocked())
+    await lock2.release()
+    assert.isFalse(await lock2.isLocked())
+    assert.isFalse(await lock.isLocked())
+  })
 }

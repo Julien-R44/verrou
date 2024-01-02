@@ -15,6 +15,10 @@ export class LockFactory {
     return new Lock(name, this.store, this.#config)
   }
 
+  restoreLock(name: string, owner: string) {
+    return new Lock(name, this.store, this.#config, owner)
+  }
+
   disconnect() {
     return this.store.disconnect()
   }

@@ -16,9 +16,24 @@ export class Lock {
     protected readonly key: string,
     protected readonly lockStore: LockStore,
     options: LockFactoryOptions = {},
+    owner?: string,
   ) {
     this.#config = { retry: { attempts: null, delay: 250, ...options.retry } }
-    this.#owner = Math.random().toString(36).slice(2)
+    this.#owner = owner ?? this.#generateOwner()
+  }
+
+  /**
+   * Generate a new owner ID
+   */
+  #generateOwner() {
+    return Math.random().toString(36).slice(2)
+  }
+
+  /**
+   * Returns the owner ID
+   */
+  getOwner() {
+    return this.#owner
   }
 
   /**
