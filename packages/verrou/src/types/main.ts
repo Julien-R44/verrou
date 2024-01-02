@@ -9,6 +9,10 @@ export * from './drivers.js'
  */
 export type Duration = number | string | null
 
+export type StoreFactory = {
+  driver: { factory: () => LockStore }
+}
+
 export interface RetryConfig {
   /**
    * The number of times to retry the operation before giving up.
@@ -63,8 +67,4 @@ export interface LockStore {
    * Extend the lock expiration
    */
   extend(key: string, duration: Duration): Promise<void>
-}
-
-export interface MutexProvider {
-  createLock(key: string, timeout?: number): LockStore
 }

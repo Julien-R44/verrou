@@ -3,6 +3,13 @@ import knex, { type Knex } from 'knex'
 import { E_RELEASE_NOT_OWNED } from '../errors.js'
 import type { DatabaseStoreOptions, Duration, LockStore } from '../types/main.js'
 
+/**
+ * Create a new database store
+ */
+export function databaseStore(config: DatabaseStoreOptions) {
+  return { config, factory: () => new DatabaseStore(config) }
+}
+
 export class DatabaseStore implements LockStore {
   /**
    * Knex connection instance

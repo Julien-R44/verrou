@@ -4,6 +4,13 @@ import type { MutexInterface } from 'async-mutex'
 import { E_RELEASE_NOT_OWNED } from '../errors.js'
 import type { Duration, LockStore } from '../types/main.js'
 
+/**
+ * Create a new memory store
+ */
+export function memoryStore() {
+  return { factory: () => new MemoryStore() }
+}
+
 export class MemoryStore implements LockStore {
   #releasers = new Map<string, { owner: string; release: () => void }>()
   #locks = new Map<string, MutexInterface>()

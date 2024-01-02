@@ -3,6 +3,13 @@ import { Redis as IoRedis } from 'ioredis'
 import { E_RELEASE_NOT_OWNED } from '../errors.js'
 import type { Duration, LockStore, RedisStoreOptions } from '../types/main.js'
 
+/**
+ * Create a new Redis store
+ */
+export function redisStore(options: RedisStoreOptions) {
+  return { factory: () => new RedisStore(options) }
+}
+
 export class RedisStore implements LockStore {
   #connection: IoRedis
 
