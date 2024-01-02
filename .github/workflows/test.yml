@@ -120,4 +120,5 @@ jobs:
       env:
         REDIS_HOST: localhost
         REDIS_PORT: 6379
+        DYNAMODB_ENDPOINT: http://localhost:8000
       run: FORCE_COLOR=1 pnpm test -r
