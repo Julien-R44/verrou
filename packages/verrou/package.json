@@ -63,5 +63,17 @@
     "format": "esm",
     "dts": true,
     "target": "esnext"
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "exclude": [
+      "bin",
+      "tests/**",
+      "test_helpers/**",
+      "factories/**"
+    ]
   }
 }
