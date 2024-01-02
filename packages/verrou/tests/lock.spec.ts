@@ -2,8 +2,8 @@ import { test } from '@japa/runner'
 
 import { Lock } from '../src/lock.js'
 import { E_LOCK_TIMEOUT } from '../src/errors.js'
-import { NullStore } from '../test_helpers/null.js'
 import { MemoryStore } from '../src/drivers/memory.js'
+import { NullStore } from '../test_helpers/null_store.js'
 
 test.group('Lock', () => {
   test('acquire', async ({ assert }) => {

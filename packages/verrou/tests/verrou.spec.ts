@@ -1,8 +1,8 @@
 import { test } from '@japa/runner'
 
 import { Verrou } from '../src/verrou.js'
-import { NullStore } from '../test_helpers/null.js'
 import { memoryStore } from '../src/drivers/memory.js'
+import { NullStore } from '../test_helpers/null_store.js'
 
 test.group('Verrou', () => {
   test('instances should be cached and re-used', ({ assert }) => {
