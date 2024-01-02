@@ -39,12 +39,13 @@
     }
   },
   "dependencies": {
-    "@lukeed/ms": "^2.0.2"
+    "@lukeed/ms": "^2.0.2",
+    "@poppinss/utils": "^6.7.0",
+    "async-mutex": "^0.4.0"
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.484.0",
-    "@poppinss/utils": "^6.7.0",
-    "async-mutex": "^0.4.0",
+    "@types/proper-lockfile": "^4.1.4",
     "ioredis": "^5.3.2",
     "knex": "^3.1.0",
     "mysql2": "^3.6.5",
