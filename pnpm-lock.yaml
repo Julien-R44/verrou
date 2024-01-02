@@ -140,6 +140,10 @@ importers:
         version: 4.5.1(@types/node@20.10.5)
 
   packages/verrou:
+    dependencies:
+      '@lukeed/ms':
+        specifier: ^2.0.2
+        version: 2.0.2
     devDependencies:
       '@poppinss/utils':
         specifier: ^6.7.0

@@ -1,65 +1,50 @@
+import { Mutex, tryAcquire } from 'async-mutex'
 import type { MutexInterface } from 'async-mutex'
-import { Mutex, withTimeout, E_TIMEOUT } from 'async-mutex'
 
-import type { MutexLock, MutexProvider } from '../types/main.js'
-import { E_LOCK_TIMEOUT, E_RELEASE_NOT_OWNED } from '../errors.js'
+import { E_RELEASE_NOT_OWNED } from '../errors.js'
+import type { Duration, LockStore } from '../types/main.js'
 
-export class MemoryMutexProvider implements MutexProvider {
+export class MemoryStore implements LockStore {
+  #releasers = new Map<string, { owner: string; release: () => void }>()
   #locks = new Map<string, MutexInterface>()
 
   /**
    * For a given key, get or create a new lock
-   *
-   * @param key Key to get or create a lock for
-   * @param timeout Time to wait to acquire the lock
    */
-  getOrCreateForKey(key: string, timeout?: number) {
+  getOrCreateForKey(key: string) {
     let lock = this.#locks.get(key)
     if (!lock) {
       lock = new Mutex()
       this.#locks.set(key, lock)
     }
 
-    return timeout ? withTimeout(lock, timeout) : lock
+    return lock
   }
 
-  createLock(key: string, timeout?: number) {
-    const mutex = this.getOrCreateForKey(key, timeout)
-    return new MemoryMutexLock(mutex, { acquireTimeout: timeout })
-  }
-}
+  async extend(_key: string, _duration: Duration) {}
 
-export class MemoryMutexLock implements MutexLock {
-  #releaser: MutexInterface.Releaser | null = null
-
-  constructor(
-    protected lock: MutexInterface,
-    protected options: { acquireTimeout?: number },
-  ) {}
-
-  async acquire() {
+  async save(key: string, owner: string) {
     try {
-      this.#releaser = await this.lock.acquire()
-    } catch (error) {
-      if (error === E_TIMEOUT) {
-        throw new E_LOCK_TIMEOUT([this.options.acquireTimeout!])
-      }
+      const mutex = this.getOrCreateForKey(key)
+      const releaser = await tryAcquire(mutex).acquire()
 
-      throw error
+      this.#releasers.set(key, { owner, release: releaser })
+      return true
+    } catch {
+      return false
     }
   }
 
-  async release() {
-    if (!this.#releaser) throw new E_RELEASE_NOT_OWNED()
+  async delete(key: string, owner: string) {
+    const releaser = this.#releasers.get(key)
+    if (!releaser) throw new E_RELEASE_NOT_OWNED()
+    if (releaser.owner !== owner) throw new E_RELEASE_NOT_OWNED()
 
-    this.#releaser()
+    releaser.release()
   }
 
-  run<T>(callback: () => Promise<T>): Promise<T> {
-    return this.lock.runExclusive(callback)
-  }
-
-  async isLocked() {
-    return this.lock.isLocked()
+  async exists(key: string) {
+    const mutex = this.getOrCreateForKey(key)
+    return mutex.isLocked()
   }
 }

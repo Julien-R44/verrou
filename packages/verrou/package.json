@@ -37,6 +37,9 @@
       "optional": true
     }
   },
+  "dependencies": {
+    "@lukeed/ms": "^2.0.2"
+  },
   "devDependencies": {
     "@poppinss/utils": "^6.7.0",
     "async-mutex": "^0.4.0",

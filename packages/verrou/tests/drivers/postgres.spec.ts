@@ -1,27 +1,38 @@
 import knex from 'knex'
 import { test } from '@japa/runner'
 
-import { DatabaseMutexProvider } from '../../src/drivers/database.js'
-import { registerDriverTestSuite } from '../../test_helpers/index.js'
+import { DatabaseStore } from '../../src/drivers/database.js'
+import { configureDatabaseGroupHooks } from '../../test_helpers/index.js'
+import { registerStoreTestSuite } from '../../test_helpers/driver_test_suite.js'
 
 const db = knex({
   client: 'pg',
   connection: { user: 'postgres', password: 'postgres' },
 })
 
-registerDriverTestSuite({
-  test,
-  name: 'Postgres Driver',
-  config: { dialect: 'pg', connection: db },
-  mutexProvider: DatabaseMutexProvider,
-  configureGroup(group) {
-    group.each.teardown(async () => {
-      await db.table('locks').truncate()
+test.group('Postgres Driver', (group) => {
+  configureDatabaseGroupHooks(db, group)
+
+  registerStoreTestSuite({
+    test,
+    store: DatabaseStore,
+    config: { dialect: 'pg', connection: db },
+  })
+
+  test('create table with specified tableName', async ({ assert, cleanup }) => {
+    const store = new DatabaseStore({
+      connection: db,
+      dialect: 'pg',
+      tableName: 'verrou_my_locks',
     })
 
-    group.teardown(async () => {
-      await db.schema.dropTable('locks')
-      await db.destroy()
+    cleanup(async () => {
+      await db.schema.dropTable('verrou_my_locks')
     })
-  },
+
+    await store.save('foo', 'bar')
+
+    const locks = await db.table('verrou_my_locks').select('*')
+    assert.lengthOf(locks, 1)
+  })
 })

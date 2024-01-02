@@ -1,8 +1,9 @@
 import knex from 'knex'
 import { test } from '@japa/runner'
 
-import { DatabaseMutexProvider } from '../../src/drivers/database.js'
-import { registerDriverTestSuite } from '../../test_helpers/index.js'
+import { DatabaseStore } from '../../src/drivers/database.js'
+import { configureDatabaseGroupHooks } from '../../test_helpers/index.js'
+import { registerStoreTestSuite } from '../../test_helpers/driver_test_suite.js'
 
 const db = knex({
   client: 'sqlite3',
@@ -10,18 +11,11 @@ const db = knex({
   useNullAsDefault: true,
 })
 
-registerDriverTestSuite({
-  test,
-  name: 'Sqlite Driver',
-  config: { dialect: 'sqlite3', connection: db },
-  mutexProvider: DatabaseMutexProvider,
-  configureGroup(group) {
-    group.each.teardown(async () => {
-      await db.table('locks').truncate()
-    })
-
-    group.teardown(async () => {
-      await db.destroy()
-    })
-  },
+test.group('Sqlite driver', (group) => {
+  configureDatabaseGroupHooks(db, group)
+  registerStoreTestSuite({
+    test,
+    config: { dialect: 'sqlite3', connection: db },
+    store: DatabaseStore,
+  })
 })

@@ -5,7 +5,7 @@ export const E_RELEASE_NOT_OWNED = createError(
   'E_RELEASE_NOT_OWNED',
 )
 
-export const E_LOCK_TIMEOUT = createError<[number]>(
-  `Lock was not acquired in the given timeout ( %s ms )`,
+export const E_LOCK_TIMEOUT = createError(
+  `Lock was not acquired in the allotted time`,
   'E_LOCK_TIMEOUT',
 )

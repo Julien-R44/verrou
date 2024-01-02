@@ -1,32 +1,20 @@
 import knex from 'knex'
 import { test } from '@japa/runner'
 
-import { DatabaseMutexProvider } from '../../src/drivers/database.js'
-import { registerDriverTestSuite } from '../../test_helpers/index.js'
+import { DatabaseStore } from '../../src/drivers/database.js'
+import { configureDatabaseGroupHooks } from '../../test_helpers/index.js'
+import { registerStoreTestSuite } from '../../test_helpers/driver_test_suite.js'
 
 const db = knex({
   client: 'mysql2',
-  connection: {
-    user: 'root',
-    password: 'root',
-    database: 'mysql',
-    port: 3306,
-  },
+  connection: { user: 'root', password: 'root', database: 'mysql', port: 3306 },
 })
 
-registerDriverTestSuite({
-  test,
-  name: 'Postgres Driver',
-  config: { dialect: 'mysql2', connection: db },
-  mutexProvider: DatabaseMutexProvider,
-  configureGroup(group) {
-    group.each.teardown(async () => {
-      await db.table('locks').truncate()
-    })
-
-    group.teardown(async () => {
-      await db.schema.dropTable('locks')
-      await db.destroy()
-    })
-  },
+test.group('Mysql driver', (group) => {
+  configureDatabaseGroupHooks(db, group)
+  registerStoreTestSuite({
+    test,
+    config: { dialect: 'mysql2', connection: db },
+    store: DatabaseStore,
+  })
 })
