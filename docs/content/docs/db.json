@@ -12,16 +12,16 @@
     "category": "Guides"
   },
   {
+    "permalink": "usage",
+    "title": "Usage",
+    "contentPath": "./usage.md",
+    "category": "Guides"
+  },
+  {
     "permalink": "drivers",
     "title": "Drivers",
     "contentPath": "./drivers.md",
     "category": "Guides"
-  },
-  {
-    "permalink": "events",
-    "title": "Events",
-    "contentPath": "./digging_deeper/events.md",
-    "category": "Digging Deeper"
   },
   {
     "permalink": "logging",

@@ -1,10 +1,10 @@
 ---
-summary: Bentocache logs a lot of information throughout its execution. Learn how to plug in your own logger.
+summary: Learn to plug in your own logger to Verrou
 ---
 
 # Logging
 
-In case you encounter any issues, or if you just want more visibility and information about what Bentocache is doing in production, you can plug in a custom logger when you create an instance of Bentocache.
+In case you encounter any issues, or if you just want more visibility and information about what Verrou is doing, you can plug in a custom logger when you create an instance of Verrou.
 
 Your logger must comply with the following interface:
 
@@ -34,7 +34,7 @@ export interface Logger {
 
 A compatible logger is, for example, [Pino](https://github.com/pinojs/pino), which is the de-facto logger to use for modern Node.js projects.
 
-Next, when you create your Bentocache instance, you can inject your logger. Example with Pino:
+Next, when you create your Verrou instance, you can inject your logger. Example with Pino:
 
 ```ts
 import { pino } from 'pino'
@@ -44,14 +44,24 @@ const logger = pino({
   transport: { target: 'pino-pretty' }
 })
 
-const bento = new BentoCache({
+const verrou = new Verrou({
   // ...
   logger,
 })
 ```
 
-Bentocache will create a child logger with the label `pkg: "bentocache"`, allowing you to filter easily on your end.
+Verrou will create a child logger with the label `pkg: "verrou"`, allowing you to filter easily on your end.
 
-Sometimes other child loggers are created depending on the context. Also logs of various levels are generated throughout the execution: trace, error, info, etc...
+If using the `LockFactory` API, you can also do the same :
 
-You will discover this quite easily when trying it out.
+```ts
+import { pino } from 'pino'
+import { LockFactory } from '@verrou/core'
+
+const logger = pino({
+  level: 'trace',
+  transport: { target: 'pino-pretty' }
+})
+
+const lockFactory = new LockFactory(memoryStore(), { logger })
+```

@@ -1,115 +1,84 @@
 ---
-summary: Learn how to create a custom cache driver for BentoCache
+summary: Learn how to create a custom lock driver for Verrou
 ---
 
-# Create a custom cache driver
+# Create a custom lock driver
 
-Extending BentoCache with your own cache driver is easy. What you need is a class that implements the `L1CacheDriver` or `L2CacheDriver` interfaces accessible from `bentocache/types`. The interface is defined as follows:
+Extending Verrou with your own cache driver is easy. What you need is a class that implements the `LockStore` interface accessible from `verrou/types`. The interface is defined as follows:
 
 ```ts
-interface L2CacheDriver {
+interface LockStore {
   /**
-   * Returns a new instance of the driver namespace
+   * Save the lock in the store if not already locked
    */
-  namespace(namespace: string): CacheDriver
+  save(key: string, owner: string, ttl: number | null | undefined): Promise<boolean>
 
   /**
-   * Get a value from the cache
+   * Delete the lock from the store
    */
-  get(key: string): Promise<string | undefined>
+  delete(key: string, owner: string): Promise<void>
 
   /**
-   * Get the value of a key and delete it
-   *
-   * Returns the value if the key exists, undefined otherwise
+   * Check if the lock exists
    */
-  pull(key: string): Promise<string | undefined>
+  exists(key: string): Promise<boolean>
 
   /**
-   * Put a value in the cache.
-   * If `ttl` is not defined, the value will be stored forever
-   * Returns true if the value was set, false otherwise
+   * Extend the lock expiration
    */
-  set(key: string, value: string, ttl?: number): Promise<boolean>
+  extend(key: string, duration: Duration): Promise<void>
 
   /**
-   * Check if a key exists in the cache
-   */
-  has(key: string): Promise<boolean>
-
-  /**
-   * Remove all items from the cache
-   */
-  clear(): Promise<void>
-
-  /**
-   * Delete a key from the cache
-   * Returns true if the key was deleted, false otherwise
-   */
-  delete(key: string): Promise<boolean>
-
-  /**
-   * Delete multiple keys from the cache
-   */
-  deleteMany(keys: string[]): Promise<boolean>
-
-  /**
-   * Closes the connection to the cache.
-   * Some drivers may not need this
+   * Disconnect the store
    */
   disconnect(): Promise<void>
 }
 ```
 
-Similarly, the `L1CacheDriver` interface is the same, except that it is not async. 
+Feel free to take a lot at [the existing drivers](https://github.com/Julien-R44/verrou/tree/develop/src/drivers) implementations for inspiration. 
 
-So this should be quite easy to implement. Feel free to take a lot at [the existings drivers](https://github.com/Julien-R44/bentocache/tree/develop/drivers) implementations for inspiration. 
-
-Also note that your driver will receive two additional parameters in the constructor : `ttl` and `prefix`. These parameters are common to every drivers and their purpose is explained in the [options](../options.md) page.
-
-Once you defined you driver, you can create a factory function that will be used by Bentocache to create instances of your driver at runtime. The factory function must be something like this:
+Once you defined you driver, you can create a factory function that will be used by Verrou to create instances of your driver at runtime. The factory function must be something like this:
 
 ```ts
-import type { CreateDriverResult } from 'bentocache/types'
+import type { CreateDriverResult } from 'verrou/types'
 
-export function myDriver(options: MyDriverOptions): CreateDriverResult<MyDriver> {
-  return {
-    options,
-    factory: (config: MyDriverOptions) => new MyDriver(config)
-  }
+export function myStore(config: MyStoreOptions): CreateDriverResult<MyStoreOptions> {
+  return { config, factory: () => new MyDriver(config) }
 }
 ```
 
-Finally, you can use your driver when creating a new instance of Bentocache:
+Finally, you can use your driver when creating a new instance of Verrou:
 
 ```ts
-import { BentoCache, bentostore } from 'bentocache'
+import { Verrou } from 'verrou'
+import { myStore } from './my_store.js'
 
-const bento = new BentoCache({
+const verrou = new Verrou({
   default: 'myStore',
   stores: {
-    myStore: bentostore()
-      .useL2Layer(myDriver({ /* Your driver options */ }))
+    myStore: myStore({ /* Your driver options */ })
   }
 })
 ```
 
 ## Tests
 
-If you want to test your driver and its compliance, Bentocache is shipped with a test suite for [Japa](https://japa.dev/docs) that you can use. Note that you will also need to have `@japa/assert` installed. Then, you can use it like this:
+If you want to test your driver and its compliance, Verrou is shipped with a test suite for [Japa](https://japa.dev/docs) that you can use. Note that you will also need to have `@japa/assert` installed. Then, you can use it like this:
 
 ```ts
 // title: tests/my_driver.spec.ts
 import { test } from '@japa/runner'
-import { registerCacheDriverTestSuite } from 'bentocache/test_suite'
 import { MyDriver } from '../src/my_driver.js'
+import { registerStoreTestSuite } from 'verrou/test_suite'
 
-registerCacheDriverTestSuite({
-  test,
-  driver: MyDriver,
-  config: {
-    // Your driver options
-  }
+test.group('My Store', (group) => {
+  registerStoreTestSuite({
+    test,
+    store: MyStore,
+    config: {
+      // Your driver options
+    }
+  })
 })
 ```
 
