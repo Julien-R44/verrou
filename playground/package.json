@@ -2,6 +2,6 @@
   "name": "@verrou/playground",
   "type": "module",
   "dependencies": {
-    "verrou": "workspace:*"
+    "@verrou/core": "workspace:*"
   }
 }

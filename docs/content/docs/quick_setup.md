@@ -38,9 +38,9 @@ Once installed, you can use Verrou in your applications with 2 different API :
 The Verrou API is the preferred and simplest way to use verrou. It is also the most flexible one :
 
 ```ts
-import { Verrou } from 'verrou'
-import { redisStore } from 'verrou/drivers/redis'
-import { memoryStore } from 'verrou/drivers/memory'
+import { Verrou } from '@verrou/core'
+import { redisStore } from '@verrou/core/drivers/redis'
+import { memoryStore } from '@verrou/core/drivers/memory'
 
 const verrou = new Verrou({
   default: 'redis',
@@ -60,8 +60,8 @@ const verrou = new Verrou({
 Alternatively, if having to keep a global variable is a hassle for you, you can use the `LockFactory` class, which lets you create locks without having to keep a global variable.
 
 ```ts
-import { LockFactory } from 'verrou'
-import { redisStore } from 'verrou/drivers/redis'
+import { LockFactory } from '@verrou/core'
+import { redisStore } from '@verrou/core/drivers/redis'
 
 const lockFactory = new LockFactory(redisStore())
 await lockFactory.createLock('foo').run(async () => {

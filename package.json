@@ -2,7 +2,7 @@
   "name": "@verrou/monorepo",
   "type": "module",
   "version": "0.0.0",
-  "description": "verrou monorepo",
+  "description": "Verrou monorepo",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
   "engines": {

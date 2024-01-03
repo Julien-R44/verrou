@@ -145,6 +145,9 @@ export class DynamoDBStore implements LockStore {
     throw new Error('Method not implemented.')
   }
 
+  /**
+   * Disconnect from DynamoDB
+   */
   async disconnect() {
     this.#client.destroy()
   }

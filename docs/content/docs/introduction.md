@@ -6,10 +6,10 @@ summary: Verrou is a locking library for managing locks in a NodeJS application.
 
 Verrou is a locking library for managing locks ( mutexes ) in a NodeJS application.
 
-- 🔒 Easy Usage
+- 🔒 Easy usage
 - 🔄 Multiple drivers (Redis, Postgres, MySQL, Sqlite, In-Memory and others)
-- 🔑 Customizable Named Locks
-- 🌐 Consistent API Across All Drivers
+- 🔑 Customizable named locks
+- 🌐 Consistent API across all drivers
 - 🧪 Easy testing by switching to an in-memory driver
 - 🔨 Easily extensible with your own drivers
 
@@ -20,9 +20,9 @@ Verrou is a locking library for managing locks ( mutexes ) in a NodeJS applicati
 
 ```ts
 // title: Basic example
-import { Verrou } from 'verrou'
-import { redisStore } from 'verrou/drivers/redis'
-import { memoryStore } from 'verrou/drivers/memory'
+import { Verrou } from '@verrou/core'
+import { redisStore } from '@verrou/core/drivers/redis'
+import { memoryStore } from '@verrou/core/drivers/memory'
 
 const verrou = new Verrou({
   default: 'redis',
@@ -39,7 +39,7 @@ await verrou.createLock('my-resource').run(async () => {
 
 ```ts
 // title: Manual lock
-import { Verrou, E_LOCK_TIMEOUT } from 'verrou'
+import { Verrou, E_LOCK_TIMEOUT } from '@verrou/core'
 
 const lock = verrou.createLock('my-resource')
 try {
@@ -52,19 +52,6 @@ try {
 } finally {
   await lock.release()
 }
-```
-
-```ts
-// title: using keyword
-import { Verrou } from 'verrou'
-
-const lock = verrou.createLock('my-resource')
-
-function myFunction() {
-  await using handle = await lock.acquire()
-
-  await doSomething()
-} // Lock is automatically released here thanks to the using keyword
 ```
 
 :::

@@ -1,7 +1,7 @@
-import { Verrou } from 'verrou'
+import { Verrou } from '@verrou/core'
 import { setTimeout } from 'node:timers/promises'
-import { redisStore } from 'verrou/drivers/redis'
-import { memoryStore } from 'verrou/drivers/memory'
+import { redisStore } from '@verrou/core/drivers/redis'
+import { memoryStore } from '@verrou/core/drivers/memory'
 
 const verrou = new Verrou({
   default: 'redis',

@@ -16,31 +16,33 @@
 
 See documentation at [verrou.dev](https://verrou.dev/docs/introduction)
 
-## Why Verrou ?
+## Why Verrou ? 
 
-Simply because there is no alternative in the Javascript Ecosystem. Main goal of Verrou is to provide a simple and unified API to use locks, no matter the driver. It brings some benefits, like being able to switch from one driver to another without changing your code. Also being able to switch to an in-memory driver in test environment to make your tests faster and easier to write ( No infrastructure to setup ).
+Main advantage of Verrou is that it provides a consistent API across all drivers. This means that you can switch from one driver to another without having to change your code. It also means you can switch to an in-memory in your test environment, making tests faster and easier to setup (no infrastructure or anything fancy to setup).
 
-We also provide a modern API, using `async/await` and `using` to make your code sexy and easy to read.
+Having a consistent API also means that you don't have to learn a new API when switching from one driver to another. Today, in the node ecosystem, we have different npm packages to manage locks, but they all have differents APIs and behaviors.
+
+But having a consistent API doesn't mean having a less powerful API. Verrou provides every features you would expect from a locking library, and even more.
 
 ## Basic usage
 
 ```ts
-import { Verrou } from 'verrou'
-import { redisStore } from 'verrou/drivers/redis'
-import { memoryStore } from 'verrou/drivers/memory'
+import { Verrou } from '@verrou/core'
+import { redisStore } from '@verrou/core/drivers/redis'
+import { memoryStore } from '@verrou/core/drivers/memory'
 
-const lock = new Verrou({
+const verrou = new Verrou({
   default: 'redis',
   drivers: {
-    redis: redisStore(),
-    memory: memoryStore()
+    redis: { driver: redisStore() },
+    memory: { driver: memoryStore() }
   }
 })
 
-// Lock a resource
-await lock.createLock('my-resource').run(async () => {
+// Lock a resource and run a function
+await verrou.createLock('my-resource').run(async () => {
   await doSomething()
-}) // Lock is automatically released after the callback
+}) // Lock is automatically released
 ```
 
 ## Sponsor 

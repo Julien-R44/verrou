@@ -175,7 +175,7 @@ importers:
 
   playground:
     dependencies:
-      verrou:
+      '@verrou/core':
         specifier: workspace:*
         version: link:../packages/verrou
 

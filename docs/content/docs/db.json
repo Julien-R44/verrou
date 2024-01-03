@@ -12,63 +12,9 @@
     "category": "Guides"
   },
   {
-    "permalink": "walkthrough",
-    "title": "Walkthrough",
-    "contentPath": "./walkthrough.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "options",
-    "title": "Options",
-    "contentPath": "./options.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "cache-drivers",
-    "title": "Cache drivers",
-    "contentPath": "./cache_drivers.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "multi-tier",
-    "title": "Multi-Tier",
-    "contentPath": "./multi_tier.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "methods",
-    "title": "Methods",
-    "contentPath": "./methods.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "namespaces",
-    "title": "Namespaces",
-    "contentPath": "./namespaces.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "named-caches",
-    "title": "Named caches",
-    "contentPath": "./named_caches.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "grace-periods",
-    "title": "Grace periods",
-    "contentPath": "./grace_periods.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "timeouts",
-    "title": "Timeouts",
-    "contentPath": "./timeouts.md",
-    "category": "Guides"
-  },
-  {
-    "permalink": "stampede-protection",
-    "title": "Stampede protection",
-    "contentPath": "./stampede_protection.md",
+    "permalink": "drivers",
+    "title": "Drivers",
+    "contentPath": "./drivers.md",
     "category": "Guides"
   },
   {
@@ -84,27 +30,9 @@
     "category": "Digging Deeper"
   },
   {
-    "permalink": "plugin-prometheus",
-    "title": "Prometheus",
-    "contentPath": "./plugins/prometheus.md",
-    "category": "Plugins"
-  },
-  {
-    "permalink": "custom-cache-driver",
-    "title": "Create a custom cache driver",
-    "contentPath": "./extend/custom_cache_driver.md",
-    "category": "Extend"
-  },
-  {
-    "permalink": "custom-bus-driver",
-    "title": "Create a custom bus driver",
-    "contentPath": "./extend/custom_bus_driver.md",
-    "category": "Extend"
-  },
-  {
-    "permalink": "create-plugin",
-    "title": "Create a plugin",
-    "contentPath": "./extend/create_plugin.md",
+    "permalink": "custom-lock-store",
+    "title": "Create a custom lock store",
+    "contentPath": "./extend/custom_lock_store.md",
     "category": "Extend"
   }
 ]
