@@ -252,7 +252,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
 
     assert.isTrue(await lock.isLocked())
 
-    await sleep(400)
+    await sleep(410)
 
     assert.isFalse(await lock.isLocked())
   })
