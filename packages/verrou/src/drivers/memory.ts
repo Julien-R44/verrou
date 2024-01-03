@@ -81,6 +81,16 @@ export class MemoryStore implements LockStore {
   }
 
   /**
+   * Force delete a lock
+   */
+  async forceRelease(key: string) {
+    const lock = this.#locks.get(key)
+    if (!lock) return
+
+    lock.releaser?.()
+  }
+
+  /**
    * Check if a lock exists
    */
   async exists(key: string) {

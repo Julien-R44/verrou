@@ -76,10 +76,24 @@ export class Lock {
   }
 
   /**
+   * Force release the lock
+   */
+  async forceRelease() {
+    await this.lockStore.forceRelease(this.key)
+  }
+
+  /**
    * Release the lock
    */
   async release() {
     await this.lockStore.delete(this.key, this.#owner)
+  }
+
+  /**
+   * Returns true if the lock is expired
+   */
+  async isExpired() {
+    return false
   }
 
   /**

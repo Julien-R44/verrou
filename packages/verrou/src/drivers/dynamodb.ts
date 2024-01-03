@@ -114,9 +114,25 @@ export class DynamoDBStore implements LockStore {
    * Delete a lock
    */
   async delete(key: string, owner: string) {
-    const currentOwner = await this.#getCurrentOwner(key)
-    if (currentOwner !== owner) throw new E_RELEASE_NOT_OWNED()
+    const command = new DeleteItemCommand({
+      TableName: this.#tableName,
+      Key: { key: { S: key } },
+      ConditionExpression: '#owner = :owner',
+      ExpressionAttributeNames: { '#owner': 'owner' },
+      ExpressionAttributeValues: { ':owner': { S: owner } },
+    })
 
+    try {
+      await this.#client.send(command)
+    } catch (err) {
+      throw new E_RELEASE_NOT_OWNED()
+    }
+  }
+
+  /**
+   * Force delete a lock
+   */
+  async forceRelease(key: string) {
     const command = new DeleteItemCommand({
       TableName: this.#tableName,
       Key: { key: { S: key } },

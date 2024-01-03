@@ -292,4 +292,16 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
 
     assert.isTrue(await lock.isLocked())
   })
+
+  test('forceRelease allows to release a lock that is not acquired by you', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    const lock2 = provider.createLock('foo')
+
+    await lock.acquire()
+
+    await lock2.forceRelease()
+
+    assert.isFalse(await lock.isLocked())
+  })
 }

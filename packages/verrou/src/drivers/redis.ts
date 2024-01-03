@@ -45,6 +45,13 @@ export class RedisStore implements LockStore {
   }
 
   /**
+   * Force delete a lock
+   */
+  async forceRelease(key: string) {
+    await this.#connection.del(key)
+  }
+
+  /**
    * Check if a lock exists
    */
   async exists(key: string): Promise<boolean> {

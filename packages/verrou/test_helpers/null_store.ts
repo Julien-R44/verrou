@@ -13,6 +13,10 @@ export class NullStore implements LockStore {
     return true
   }
 
+  async forceRelease(_key: string): Promise<void> {
+    return
+  }
+
   async extend(_key: string, _duration: Duration): Promise<void> {
     return
   }

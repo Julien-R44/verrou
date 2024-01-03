@@ -131,6 +131,13 @@ export class DatabaseStore implements LockStore {
   }
 
   /**
+   * Force delete a lock
+   */
+  async forceRelease(key: string) {
+    await this.#connection.table(this.#tableName).where('key', key).delete()
+  }
+
+  /**
    * Check if a lock exists
    */
   async exists(key: string) {

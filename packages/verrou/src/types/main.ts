@@ -60,6 +60,11 @@ export interface LockStore {
   delete(key: string, owner: string): Promise<void>
 
   /**
+   * Force delete the lock from the store
+   */
+  forceRelease(key: string): Promise<void>
+
+  /**
    * Check if the lock exists
    */
   exists(key: string): Promise<boolean>
