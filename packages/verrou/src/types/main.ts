@@ -1,3 +1,5 @@
+import type { Logger } from 'typescript-log'
+
 export * from './drivers.js'
 
 /**
@@ -42,10 +44,12 @@ export interface LockAcquireOptions {
 
 export interface LockFactoryOptions {
   retry?: RetryConfig
+  logger?: Logger
 }
 
 export interface LockFactoryConfig {
   retry: RetryConfig
+  logger: Logger
 }
 
 export interface LockStore {

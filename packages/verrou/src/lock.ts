@@ -1,25 +1,18 @@
 import { setTimeout } from 'node:timers/promises'
 
 import { E_LOCK_TIMEOUT } from './errors.js'
-import type {
-  LockAcquireOptions,
-  LockFactoryConfig,
-  LockFactoryOptions,
-  LockStore,
-} from './types/main.js'
+import type { LockAcquireOptions, LockFactoryConfig, LockStore } from './types/main.js'
 
 export class Lock {
-  #config: LockFactoryConfig
   #owner: string
 
   constructor(
     protected readonly key: string,
     protected readonly lockStore: LockStore,
-    options: LockFactoryOptions = {},
+    protected config: LockFactoryConfig,
     owner?: string,
     protected ttl?: number | null,
   ) {
-    this.#config = { retry: { attempts: null, delay: 250, ...options.retry } }
     this.#owner = owner ?? this.#generateOwner()
   }
 
@@ -44,7 +37,7 @@ export class Lock {
     let attemptsDone = 0
     const start = Date.now()
     const attemptsMax =
-      options?.retry?.attempts ?? this.#config.retry.attempts ?? Number.POSITIVE_INFINITY
+      options?.retry?.attempts ?? this.config.retry.attempts ?? Number.POSITIVE_INFINITY
 
     while (attemptsDone++ < attemptsMax) {
       const result = await this.lockStore.save(this.key, this.#owner, this.ttl)
@@ -53,12 +46,14 @@ export class Lock {
       if (attemptsDone === attemptsMax) throw new E_LOCK_TIMEOUT()
 
       const elapsed = Date.now() - start
-      if (this.#config.retry.timeout && elapsed > this.#config.retry.timeout) {
+      if (this.config.retry.timeout && elapsed > this.config.retry.timeout) {
         throw new E_LOCK_TIMEOUT()
       }
 
-      await setTimeout(this.#config.retry.delay ?? 250)
+      await setTimeout(this.config.retry.delay ?? 250)
     }
+
+    this.config.logger.debug({ key: this.key }, 'Lock acquired')
   }
 
   /**

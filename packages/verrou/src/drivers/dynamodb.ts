@@ -67,20 +67,6 @@ export class DynamoDBStore implements LockStore {
   }
 
   /**
-   * Get the current owner of a lock
-   */
-  async #getCurrentOwner(key: string) {
-    await this.#initialized
-    const command = new GetItemCommand({
-      TableName: this.#tableName,
-      Key: { key: { S: key } },
-    })
-
-    const result = await this.#client.send(command)
-    return result.Item?.owner?.S
-  }
-
-  /**
    * Save a lock
    */
   async save(key: string, owner: string, ttl: number | null) {

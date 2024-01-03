@@ -41,4 +41,24 @@ test.group('Verrou', () => {
     const lock = verrou.createLock('foo')
     await lock.acquire()
   })
+
+  test('assign custom logger', async ({ assert }) => {
+    const logger = {
+      loggedMessages: [] as any,
+      child: () => logger,
+      log: (level: string, message: any) => logger.loggedMessages.push({ level, message }),
+      trace: (message: any) => logger.log('trace', message),
+      debug: (...args: any[]) => logger.log('debug', args),
+    }
+
+    const verrou = new Verrou({
+      default: 'memory',
+      logger: logger as any,
+      stores: { memory: { driver: memoryStore() } },
+    })
+
+    await verrou.createLock('foo').acquire()
+
+    assert.isAbove(logger.loggedMessages.length, 0)
+  })
 })

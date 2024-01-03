@@ -1,3 +1,5 @@
+import { noopLogger } from 'typescript-log'
+
 import { Lock } from './lock.js'
 import { resolveDuration } from './helpers.js'
 import type { Duration, LockFactoryConfig, LockFactoryOptions, LockStore } from './types/main.js'
@@ -17,7 +19,10 @@ export class LockFactory {
     protected readonly store: LockStore,
     options: LockFactoryOptions = {},
   ) {
-    this.#config = { retry: { attempts: null, delay: 250, ...options.retry } }
+    this.#config = {
+      retry: { attempts: null, delay: 250, ...options.retry },
+      logger: (options.logger ?? noopLogger()).child({ pkg: 'verrou' }),
+    }
   }
 
   /**

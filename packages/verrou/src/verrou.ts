@@ -1,3 +1,5 @@
+import { noopLogger, type Logger } from 'typescript-log'
+
 import { LockFactory } from './lock_factory.js'
 import type { Duration, StoreFactory } from './types/main.js'
 
@@ -22,9 +24,15 @@ export class Verrou<KnownStores extends Record<string, StoreFactory>> {
    */
   #storesCache: Map<keyof KnownStores, LockFactory> = new Map()
 
-  constructor(config: { default: keyof KnownStores; stores: KnownStores }) {
+  /**
+   * Logger instance
+   */
+  #logger: Logger
+
+  constructor(config: { default: keyof KnownStores; stores: KnownStores; logger?: Logger }) {
     this.#stores = config.stores
     this.#defaultStoreName = config.default
+    this.#logger = (config.logger ?? noopLogger()).child({ pkg: 'verrou' })
   }
 
   /**
@@ -38,7 +46,10 @@ export class Verrou<KnownStores extends Record<string, StoreFactory>> {
       return this.#storesCache.get(storeToUse)!
     }
 
-    const factory = new LockFactory(this.#stores[storeToUse]!.driver.factory())
+    const factory = new LockFactory(this.#stores[storeToUse]!.driver.factory(), {
+      logger: this.#logger,
+    })
+
     this.#storesCache.set(storeToUse, factory)
 
     return factory

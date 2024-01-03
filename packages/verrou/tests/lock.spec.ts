@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { noopLogger } from 'typescript-log'
 
 import { Lock } from '../src/lock.js'
 import { E_LOCK_TIMEOUT } from '../src/errors.js'
@@ -8,7 +9,7 @@ import { NullStore } from '../test_helpers/null_store.js'
 test.group('Lock', () => {
   test('acquire', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store)
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
 
     assert.deepEqual(await lock.isLocked(), false)
 
@@ -24,7 +25,10 @@ test.group('Lock', () => {
       }
     }
 
-    const lock = new Lock('foo', new FakeStore(), { retry: { attempts: 2, delay: 10 } })
+    const lock = new Lock('foo', new FakeStore(), {
+      retry: { attempts: 2, delay: 10 },
+      logger: noopLogger(),
+    })
 
     // @ts-ignore
     await assert.rejects(() => lock.acquire(), E_LOCK_TIMEOUT.message)
@@ -39,7 +43,7 @@ test.group('Lock', () => {
       }
     }
 
-    const lock = new Lock('foo', new FakeStore(), { retry: { attempts: 5 } })
+    const lock = new Lock('foo', new FakeStore(), { retry: { attempts: 5 }, logger: noopLogger() })
 
     // @ts-ignore
     await assert.rejects(() => lock.acquire(), E_LOCK_TIMEOUT.message)
@@ -54,7 +58,10 @@ test.group('Lock', () => {
     }
 
     const start = Date.now()
-    const lock = new Lock('foo', new FakeStore(), { retry: { attempts: 5, delay: 100 } })
+    const lock = new Lock('foo', new FakeStore(), {
+      retry: { attempts: 5, delay: 100 },
+      logger: noopLogger(),
+    })
 
     // @ts-ignore
     await assert.rejects(() => lock.acquire(), E_LOCK_TIMEOUT.message)
@@ -71,7 +78,10 @@ test.group('Lock', () => {
     }
 
     const start = Date.now()
-    const lock = new Lock('foo', new FakeStore(), { retry: { timeout: 100, delay: 10 } })
+    const lock = new Lock('foo', new FakeStore(), {
+      retry: { timeout: 100, delay: 10 },
+      logger: noopLogger(),
+    })
 
     // @ts-ignore
     await assert.rejects(() => lock.acquire(), E_LOCK_TIMEOUT.message)
@@ -84,7 +94,7 @@ test.group('Lock', () => {
     assert.plan(3)
 
     const store = new MemoryStore()
-    const lock = new Lock('foo', store)
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
 
     assert.deepEqual(await lock.isLocked(), false)
 
@@ -97,7 +107,7 @@ test.group('Lock', () => {
 
   test('run should return callback result', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store)
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
 
     const result = await lock.run(async () => 'foo')
 
