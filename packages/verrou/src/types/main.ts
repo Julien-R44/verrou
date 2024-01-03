@@ -6,6 +6,7 @@ export * from './drivers.js'
  * Formats accepted are :
  * - Simple number in milliseconds
  * - String formatted as a duration. Uses https://github.com/lukeed/ms under the hood
+ * - Null to indicate no expiration
  */
 export type Duration = number | string | null
 
@@ -51,7 +52,7 @@ export interface LockStore {
   /**
    * Save the lock in the store if not already locked
    */
-  save(key: string, owner: string): Promise<boolean>
+  save(key: string, owner: string, ttl: number | null | undefined): Promise<boolean>
 
   /**
    * Delete the lock from the store

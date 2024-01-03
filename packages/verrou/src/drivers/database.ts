@@ -62,7 +62,7 @@ export class DatabaseStore implements LockStore {
     await this.#connection.schema.createTable(this.#tableName, (table) => {
       table.string('key', 255).notNullable().primary()
       table.string('owner').notNullable()
-      table.bigint('expiration').notNullable()
+      table.bigint('expiration').unsigned().nullable()
     })
   }
 
@@ -70,8 +70,9 @@ export class DatabaseStore implements LockStore {
     throw new Error('Method not implemented.')
   }
 
-  #expireAt() {
-    return Date.now() + 86_400
+  #expireAt(ttl: number | null) {
+    if (ttl) return Date.now() + ttl
+    return null
   }
 
   async #getCurrentOwner(key: string) {
@@ -85,12 +86,12 @@ export class DatabaseStore implements LockStore {
     return result?.owner
   }
 
-  async save(key: string, owner: string) {
+  async save(key: string, owner: string, ttl: number | null) {
     try {
       await this.#initialized
       await this.#connection
         .table(this.#tableName)
-        .insert({ key, owner, expiration: this.#expireAt() })
+        .insert({ key, owner, expiration: this.#expireAt(ttl) })
 
       return true
     } catch (error) {
@@ -98,7 +99,7 @@ export class DatabaseStore implements LockStore {
         .table(this.#tableName)
         .where('key', key)
         .where('expiration', '<=', Date.now())
-        .update({ owner, expiration: this.#expireAt() })
+        .update({ owner, expiration: this.#expireAt(ttl) })
 
       return updated === 1
     }

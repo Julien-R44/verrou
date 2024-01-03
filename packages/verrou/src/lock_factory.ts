@@ -1,7 +1,16 @@
 import { Lock } from './lock.js'
-import type { LockFactoryConfig, LockFactoryOptions, LockStore } from './types/main.js'
+import { resolveDuration } from './helpers.js'
+import type { Duration, LockFactoryConfig, LockFactoryOptions, LockStore } from './types/main.js'
 
 export class LockFactory {
+  /**
+   * Default TTL for locks. 30 seconds.
+   */
+  static #kDefaultTtl = 30_000
+
+  /**
+   * Resolved LockFactory configuration
+   */
   #config: LockFactoryConfig
 
   constructor(
@@ -11,14 +20,25 @@ export class LockFactory {
     this.#config = { retry: { attempts: null, delay: 250, ...options.retry } }
   }
 
-  createLock(name: string) {
-    return new Lock(name, this.store, this.#config)
+  /**
+   * Create a new lock
+   */
+  createLock(name: string, ttl: Duration = LockFactory.#kDefaultTtl) {
+    return new Lock(name, this.store, this.#config, undefined, resolveDuration(ttl))
   }
 
-  restoreLock(name: string, owner: string) {
-    return new Lock(name, this.store, this.#config, owner)
+  /**
+   * Restore a lock from a previous owner. This is particularly useful
+   * if you want to release a lock from a different process than the one
+   * that acquired it.
+   */
+  restoreLock(name: string, owner: string, ttl: Duration = LockFactory.#kDefaultTtl) {
+    return new Lock(name, this.store, this.#config, owner, resolveDuration(ttl))
   }
 
+  /**
+   * Disconnect the store ( if applicable )
+   */
   disconnect() {
     return this.store.disconnect()
   }

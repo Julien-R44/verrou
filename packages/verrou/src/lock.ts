@@ -17,6 +17,7 @@ export class Lock {
     protected readonly lockStore: LockStore,
     options: LockFactoryOptions = {},
     owner?: string,
+    protected ttl?: number | null,
   ) {
     this.#config = { retry: { attempts: null, delay: 250, ...options.retry } }
     this.#owner = owner ?? this.#generateOwner()
@@ -46,7 +47,7 @@ export class Lock {
       options?.retry?.attempts ?? this.#config.retry.attempts ?? Number.POSITIVE_INFINITY
 
     while (attemptsDone++ < attemptsMax) {
-      const result = await this.lockStore.save(this.key, this.#owner)
+      const result = await this.lockStore.save(this.key, this.#owner, this.ttl)
       if (result) break
 
       if (attemptsDone === attemptsMax) throw new E_LOCK_TIMEOUT()

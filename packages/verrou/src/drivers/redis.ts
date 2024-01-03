@@ -44,7 +44,12 @@ export class RedisStore implements LockStore {
     return !!result
   }
 
-  async save(key: string, owner: string) {
+  async save(key: string, owner: string, ttl: number | null) {
+    if (ttl) {
+      const result = await this.#connection.set(key, owner, 'PX', ttl, 'NX')
+      return result === 'OK'
+    }
+
     const result = await this.#connection.setnx(key, owner)
     return result === 1
   }

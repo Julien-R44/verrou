@@ -22,10 +22,12 @@ function deleteTableTeardown(tableName: string) {
 test.group('DynamoDB Store', (group) => {
   group.each.teardown(deleteTableTeardown('verrou'))
 
+  registerStoreTestSuite({ test, config, store: DynamoDBStore })
+
   test('should automatically create table', async ({ assert }) => {
     const store = new DynamoDBStore(config)
 
-    await store.save('foo', 'bar')
+    await store.save('foo', 'bar', 1000)
 
     const cmd = new GetItemCommand({ TableName: 'verrou', Key: { key: { S: 'foo' } } })
     const { Item: item } = await dynamoClient.send(cmd)
@@ -38,7 +40,7 @@ test.group('DynamoDB Store', (group) => {
     const store = new DynamoDBStore({ ...config, table: { name: 'my_locks' } })
     cleanup(deleteTableTeardown('my_locks'))
 
-    await store.save('foo', 'bar')
+    await store.save('foo', 'bar', 1000)
 
     const cmd = new GetItemCommand({ TableName: 'my_locks', Key: { key: { S: 'foo' } } })
     const { Item: item } = await dynamoClient.send(cmd)
@@ -51,9 +53,23 @@ test.group('DynamoDB Store', (group) => {
     const store = new DynamoDBStore(config)
     const store2 = new DynamoDBStore(config)
 
-    await store.save('foo', 'bar')
-    await store2.save('foo2', 'bar2')
+    await store.save('foo', 'bar', 1000)
+    await store2.save('foo2', 'bar2', 1000)
   })
 
-  registerStoreTestSuite({ test, config, store: DynamoDBStore })
+  test('null ttl', async ({ assert }) => {
+    const store = new DynamoDBStore(config)
+    await store.save('foo', 'bar', null)
+
+    const command = new GetItemCommand({
+      TableName: 'verrou',
+      Key: { key: { S: 'foo' } },
+    })
+
+    const { Item } = await dynamoClient.send(command)
+
+    assert.deepEqual(Item!.key.S, 'foo')
+    assert.deepEqual(Item!.owner.S, 'bar')
+    assert.isUndefined(Item!.expires_at)
+  })
 })

@@ -200,4 +200,73 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
     assert.isFalse(await lock2.isLocked())
     assert.isFalse(await lock.isLocked())
   })
+
+  test('exists returns false if lock is expired', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo', 1000)
+
+    await lock.acquire()
+
+    assert.isTrue(await lock.isLocked())
+
+    await sleep(1200)
+
+    assert.isFalse(await lock.isLocked())
+  })
+
+  test('should be able to acquire lock after it expires', async ({ assert }) => {
+    const storeInstance = new store(config)
+    const provider = new LockFactory(storeInstance, { retry: { delay: 25 } })
+    const lock1 = provider.createLock('foo', 1000)
+    const lock2 = provider.createLock('foo', 1000)
+
+    await lock1.acquire()
+
+    assert.isTrue(await lock1.isLocked())
+    await sleep(1000)
+
+    await lock2.acquire()
+    assert.isTrue(await lock2.isLocked())
+  })
+
+  test('should be able to acquire lock with another instance after it expires', async ({
+    assert,
+  }) => {
+    const storeInstance = new store(config)
+    const provider = new LockFactory(storeInstance)
+    const lock1 = provider.createLock('foo', 1000)
+    const lock2 = provider.createLock('foo', 1000)
+
+    await lock1.acquire()
+    await sleep(1200)
+
+    await lock2.acquire()
+    assert.isTrue(await lock2.isLocked())
+  })
+
+  test('custom ttl should be used', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo', 400)
+
+    await lock.acquire()
+
+    assert.isTrue(await lock.isLocked())
+
+    await sleep(400)
+
+    assert.isFalse(await lock.isLocked())
+  })
+
+  test('null ttl so that lock never expires', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo', null)
+
+    await lock.acquire()
+
+    assert.isTrue(await lock.isLocked())
+
+    await sleep(1000)
+
+    assert.isTrue(await lock.isLocked())
+  })
 }

@@ -83,15 +83,23 @@ export class DynamoDBStore implements LockStore {
   /**
    * Save a lock
    */
-  async save(key: string, owner: string) {
+  async save(key: string, owner: string, ttl: number | null) {
     await this.#initialized
 
     try {
       const command = new PutItemCommand({
         TableName: this.#tableName,
-        Item: { key: { S: key }, owner: { S: owner } },
-        ConditionExpression: 'attribute_not_exists(#key)',
-        ExpressionAttributeNames: { '#key': 'key' },
+        Item: {
+          key: { S: key },
+          owner: { S: owner },
+          ...(ttl ? { expires_at: { N: (Date.now() + ttl).toString() } } : {}),
+        },
+        ConditionExpression: 'attribute_not_exists(#key) OR #expires_at < :now',
+        ExpressionAttributeNames: {
+          '#key': 'key',
+          '#expires_at': 'expires_at',
+        },
+        ExpressionAttributeValues: { ':now': { N: Date.now().toString() } },
       })
 
       const result = await this.#client.send(command)
@@ -128,7 +136,9 @@ export class DynamoDBStore implements LockStore {
     })
 
     const result = await this.#client.send(command)
-    return result.Item !== undefined
+    const isExpired = result.Item?.expires_at.N && result.Item.expires_at.N < Date.now().toString()
+
+    return result.Item !== undefined && !isExpired
   }
 
   async extend(_key: string, _duration: Duration) {

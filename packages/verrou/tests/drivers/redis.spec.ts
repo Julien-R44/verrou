@@ -21,4 +21,12 @@ test.group('Redis Driver', (group) => {
     config: { connection: ioredis },
     store: RedisStore,
   })
+
+  test('null ttl', async ({ assert }) => {
+    const store = new RedisStore({ connection: ioredis })
+    await store.save('foo', 'bar', null)
+
+    const ttl = await ioredis.ttl('foo')
+    assert.deepEqual(ttl, -1)
+  })
 })

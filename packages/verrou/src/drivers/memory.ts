@@ -11,31 +11,48 @@ export function memoryStore() {
   return { factory: () => new MemoryStore() }
 }
 
+type MemoryLockEntry = {
+  mutex: MutexInterface
+  releaser?: () => void
+  owner: string
+  expiresAt?: number
+}
+
 export class MemoryStore implements LockStore {
-  #releasers = new Map<string, { owner: string; release: () => void }>()
-  #locks = new Map<string, MutexInterface>()
+  #locks = new Map<string, MemoryLockEntry>()
 
   /**
    * For a given key, get or create a new lock
    */
-  getOrCreateForKey(key: string) {
+  getOrCreateForKey(key: string, owner: string) {
     let lock = this.#locks.get(key)
     if (!lock) {
-      lock = new Mutex()
+      lock = { mutex: new Mutex(), owner }
       this.#locks.set(key, lock)
     }
 
     return lock
   }
 
+  #expiresAt(ttl: number | null) {
+    return ttl ? Date.now() + ttl : Number.POSITIVE_INFINITY
+  }
+
+  #isLockEntryExpired(lock: MemoryLockEntry) {
+    return lock.expiresAt && lock.expiresAt < Date.now()
+  }
+
   async extend(_key: string, _duration: Duration) {}
 
-  async save(key: string, owner: string) {
+  async save(key: string, owner: string, ttl: number | null) {
     try {
-      const mutex = this.getOrCreateForKey(key)
-      const releaser = await tryAcquire(mutex).acquire()
+      const lock = this.getOrCreateForKey(key, owner)
 
-      this.#releasers.set(key, { owner, release: releaser })
+      if (this.#isLockEntryExpired(lock)) lock.releaser?.()
+
+      lock.releaser = await tryAcquire(lock.mutex).acquire()
+      lock.expiresAt = this.#expiresAt(ttl)
+
       return true
     } catch {
       return false
@@ -43,16 +60,19 @@ export class MemoryStore implements LockStore {
   }
 
   async delete(key: string, owner: string) {
-    const releaser = this.#releasers.get(key)
-    if (!releaser) throw new E_RELEASE_NOT_OWNED()
-    if (releaser.owner !== owner) throw new E_RELEASE_NOT_OWNED()
+    const mutex = this.#locks.get(key)
 
-    releaser.release()
+    if (!mutex || !mutex.releaser) throw new E_RELEASE_NOT_OWNED()
+    if (mutex.owner !== owner) throw new E_RELEASE_NOT_OWNED()
+
+    mutex.releaser()
   }
 
   async exists(key: string) {
-    const mutex = this.getOrCreateForKey(key)
-    return mutex.isLocked()
+    const lock = this.#locks.get(key)
+    if (!lock || this.#isLockEntryExpired(lock)) return false
+
+    return lock.mutex.isLocked()
   }
 
   async disconnect() {
