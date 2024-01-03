@@ -16,7 +16,7 @@ import { verrou } from './verrou.js'
 const lock = verrou.createLock('my-resource', '1s')
 ```
 
-The first argument is the resource/key to lock. This is an arbitrary string that will be used to identify the lock. The second argument is the duration of the lock. It can be a number of milliseconds, a string like `1s` or `1m` ( see [lukee/ms documentation](https://github.com/lukeed/ms), or even `null` if you want to create a lock that never expires.
+The first argument is the resource/key to lock. This is an arbitrary string that will be used to identify the lock. The second argument is the duration of the lock. It can be a number of milliseconds, a string like `1s` or `1m` ( see [lukeed/ms documentation](https://github.com/lukeed/ms), or even `null` if you want to create a lock that never expires.
 
 Note that the duration you are passing is the duration of the lease. This means that the lock will be automatically released after this duration. This is safe to always pass a duration, even if you are releasing the lock manually afterwards ( see below ). Having a duration will prevent the lock from being stuck forever if the process crashes before releasing it ( We call this a **Deadlock** ).
 

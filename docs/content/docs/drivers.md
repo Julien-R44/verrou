@@ -42,11 +42,11 @@ const verrou = new Verrou({
 import { Verrou, LockFactory } from '@verrou/core'
 import { redisStore } from '@verrou/core/drivers/redis'
 
-const lockFactory = new LockFactory(
-  redisStore({
-    connection: { host: 'localhost', port: 6379 }
-  })
-)
+const store = redisStore({
+  connection: { host: 'localhost', port: 6379 }
+})
+
+const lockFactory = new LockFactory(store)
 ```
 
 :::
@@ -84,8 +84,10 @@ The memory store is a simple in-memory store, so don't use it in a multi-server 
 
 Use [async-mutex](https://www.npmjs.com/package/async-mutex) under the hood.
 
+:::codegroup
 
 ```ts
+// title: Verrou API
 import { Verrou } from '@verrou/core'
 import { memoryStore } from '@verrou/core/drivers/memory'
 
@@ -97,11 +99,25 @@ const verrou = new Verrou({
 })
 ```
 
+```ts
+// title: LockFactory API
+import { Verrou, LockFactory } from '@verrou/core'
+import { memoryStore } from '@verrou/core/drivers/memory'
+
+const store = memoryStore()
+const lockFactory = new LockFactory(store)
+```
+
+:::
+
 ## DynamoDB
 
 DynamoDB is also supported by Verrou. You will need to install `@aws-sdk/client-dynamodb` to use this driver.
 
+:::codegroup
+
 ```ts
+// title: Verrou API
 import { Verrou } from '@verrou/core'
 import { dynamodbStore } from '@verrou/core/drivers/dynamodb'
 
@@ -109,7 +125,7 @@ const verrou = new Verrou({
   default: 'dynamo',
   stores: {
     dynamo: {
-      driver: dynamoDbDriver({
+      driver: dynamodbStore({
         endpoint: '...',
         region: 'eu-west-3',
         table: {
@@ -127,6 +143,31 @@ const verrou = new Verrou({
   }
 })
 ```
+
+```ts
+// title: LockFactory API
+import { Verrou, LockFactory } from '@verrou/core'
+import { dynamodbStore } from '@verrou/core/drivers/dynamodb'
+
+const store = dynamodbStore({
+  endpoint: '...',
+  region: 'eu-west-3',
+  table: {
+    // Name of the table where the locks will be stored
+    name: 'locks' 
+  },
+
+  // Credentials to use to connect to DynamoDB
+  credentials: {
+    accessKeyId: '...',
+    secretAccessKey: '...'
+  }
+})
+
+const lockFactory = new LockFactory(store)
+
+```
+:::
 
 The DynamoDB table will be automatically created if it does not exists. Otherwise, you can create it manually and specify the name of the table in the options.
 
@@ -155,7 +196,10 @@ All SQL drivers accept the following options:
 
 You will need to install `pg` to use this driver.
 
+:::codegroup
+
 ```ts
+// title: Verrou API
 import { Verrou } from '@verrou/core'
 import { databaseStore } from '@verrou/core/drivers/database'
 
@@ -163,24 +207,47 @@ const verrou = new Verrou({
   default: 'pg',
   stores: {
     pg: {
-      driver: {
+      driver: databaseStore({
+        dialect: 'pg',
         connection: {
           user: 'root',
           password: 'root',
           database: 'postgres',
           port: 5432 
         }
-      }
+      })
     }
   }
 })
 ```
 
+```ts
+// title: LockFactory API
+import { Verrou, LockFactory } from '@verrou/core'
+import { databaseStore } from '@verrou/core/drivers/database'
+
+const store = databaseStore({
+  dialect: 'pg',
+  connection: {
+    user: 'root',
+    password: 'root',
+    database: 'postgres',
+    port: 5432 
+  }
+})
+const lockFactory = new LockFactory(store)
+```
+
+:::
+
 ### MySQL
 
 You will need to install `mysql2` to use this driver.
 
+:::codegroup
+
 ```ts
+// title: Verrou API
 import { Verrou } from '@verrou/core'
 import { databaseStore } from '@verrou/core/drivers/database'
 
@@ -188,42 +255,48 @@ const verrou = new Verrou({
   default: 'mysql',
   stores: {
     mysql: {
-      driver: {
+      driver: databaseStore({
+        dialect: 'mysql',
         connection: {
           user: 'root', 
           password: 'root', 
           database: 'mysql', 
           port: 3306
         }
-      }
+      })
     }
   }
 })
 ```
+
+```ts
+// title: LockFactory API
+import { Verrou, LockFactory } from '@verrou/core'
+import { databaseStore } from '@verrou/core/drivers/database'
+
+const store = databaseStore({
+  dialect: 'mysql',
+  connection: {
+    user: 'root',
+    password: 'root',
+    database: 'mysql',
+    port: 3306
+  }
+})
+
+const lockFactory = new LockFactory(store)
+```
+
+:::
 
 ### SQLite ( better-sqlite3 )
 
 You will need to install `better-sqlite3` to use this driver.
 
-```ts
-import { Verrou } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
-
-const verrou = new Verrou({
-  default: 'sqlite3',
-  stores: {
-    sqlite3: {
-      driver: { connection: { filename: 'cache.sqlite3' } }
-    }
-  }
-})
-```
-
-### SQLite ( sqlite3 )
-
-You will need to install `sqlite3` to use this driver.
+:::codegroup
 
 ```ts
+// title: Verrou API
 import { Verrou } from '@verrou/core'
 import { databaseStore } from '@verrou/core/drivers/database'
 
@@ -231,11 +304,68 @@ const verrou = new Verrou({
   default: 'sqlite',
   stores: {
     sqlite: {
-      driver: { connection: { filename: 'cache.sqlite3' } }
+      driver: databaseStore({
+        dialect: 'better-sqlite3',
+        connection: { filename: 'cache.sqlite3' }
+      })
     }
   }
 })
 ```
+
+```ts
+// title: LockFactory API
+import { Verrou, LockFactory } from '@verrou/core'
+import { databaseStore } from '@verrou/core/drivers/database'
+
+const store = databaseStore({
+  dialect: 'better-sqlite3',
+  connection: { filename: 'cache.sqlite3' }
+})
+
+const lockFactory = new LockFactory(store)
+```
+
+:::
+
+
+### SQLite ( sqlite3 )
+
+You will need to install `sqlite3` to use this driver.
+
+:::codegroup
+
+```ts
+// title: Verrou API
+import { Verrou } from '@verrou/core'
+import { databaseStore } from '@verrou/core/drivers/database'
+
+const verrou = new Verrou({
+  default: 'sqlite',
+  stores: {
+    sqlite: {
+      driver: databaseStore({
+        connection: { filename: 'cache.sqlite3' }
+      })
+    }
+  }
+})
+```
+
+```ts
+// title: LockFactory API
+import { Verrou, LockFactory } from '@verrou/core'
+import { databaseStore } from '@verrou/core/drivers/database'
+
+const store = databaseStore({
+  dialect: 'sqlite',
+  connection: { filename: 'cache.sqlite3' }
+})
+
+const lockFactory = new LockFactory(store)
+```
+
+:::
 
 ### Implementation details
 
