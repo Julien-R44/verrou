@@ -136,7 +136,7 @@ export class DynamoDBStore implements LockStore {
     })
 
     const result = await this.#client.send(command)
-    const isExpired = result.Item?.expires_at.N && result.Item.expires_at.N < Date.now().toString()
+    const isExpired = result.Item?.expires_at?.N && result.Item.expires_at.N < Date.now().toString()
 
     return result.Item !== undefined && !isExpired
   }

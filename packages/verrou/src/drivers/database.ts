@@ -121,6 +121,8 @@ export class DatabaseStore implements LockStore {
       .first()
 
     if (!result) return false
+    if (result.expiration === null) return true
+
     return result.expiration > Date.now()
   }
 
