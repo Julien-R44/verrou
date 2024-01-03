@@ -2,9 +2,9 @@ import type { Group } from '@japa/runner/core'
 import type { test as JapaTest } from '@japa/runner'
 import { setTimeout as sleep } from 'node:timers/promises'
 
-import { E_LOCK_TIMEOUT } from '../index.js'
 import { LockFactory } from '../src/lock_factory.js'
 import type { LockStore } from '../src/types/main.js'
+import { E_LOCK_NOT_OWNED, E_LOCK_TIMEOUT } from '../index.js'
 
 export function registerStoreTestSuite<T extends { new (options: any): LockStore }>(options: {
   test: typeof JapaTest
@@ -304,4 +304,34 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
 
     assert.isFalse(await lock.isLocked())
   })
+
+  test('extend extends the lock ttl', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo', 1000)
+
+    await lock.acquire()
+
+    assert.isTrue(await lock.isLocked())
+
+    await sleep(500)
+    await lock.extend(1000)
+
+    assert.isTrue(await lock.isLocked())
+
+    await sleep(500)
+
+    assert.isTrue(await lock.isLocked())
+
+    await sleep(500)
+
+    assert.isFalse(await lock.isLocked())
+  })
+
+  test('extend throws if lock is not acquired', async () => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo', 1000)
+
+    await lock.extend()
+    // @ts-expect-error poppinss/utils typing bug
+  }).throws(E_LOCK_NOT_OWNED.message, E_LOCK_NOT_OWNED)
 }

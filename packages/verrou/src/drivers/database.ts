@@ -1,7 +1,7 @@
 import knex, { type Knex } from 'knex'
 
-import { E_RELEASE_NOT_OWNED } from '../errors.js'
-import type { DatabaseStoreOptions, Duration, LockStore } from '../types/main.js'
+import { E_LOCK_NOT_OWNED, E_RELEASE_NOT_OWNED } from '../errors.js'
+import type { DatabaseStoreOptions, LockStore } from '../types/main.js'
 
 /**
  * Create a new database store
@@ -88,10 +88,6 @@ export class DatabaseStore implements LockStore {
     return result?.owner
   }
 
-  extend(_key: string, _duration: Duration): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
-
   /**
    * Save a new lock
    *
@@ -135,6 +131,19 @@ export class DatabaseStore implements LockStore {
    */
   async forceRelease(key: string) {
     await this.#connection.table(this.#tableName).where('key', key).delete()
+  }
+
+  /**
+   * Extend a lock
+   */
+  async extend(key: string, owner: string, duration: number) {
+    const updated = await this.#connection
+      .table(this.#tableName)
+      .where('key', key)
+      .where('owner', owner)
+      .update({ expiration: Date.now() + duration })
+
+    if (updated === 0) throw new E_LOCK_NOT_OWNED()
   }
 
   /**

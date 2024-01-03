@@ -1,8 +1,8 @@
 import { Mutex, tryAcquire } from 'async-mutex'
 import type { MutexInterface } from 'async-mutex'
 
-import { E_RELEASE_NOT_OWNED } from '../errors.js'
-import type { Duration, LockStore } from '../types/main.js'
+import type { LockStore } from '../types/main.js'
+import { E_LOCK_NOT_OWNED, E_RELEASE_NOT_OWNED } from '../errors.js'
 
 type MemoryLockEntry = {
   mutex: MutexInterface
@@ -48,7 +48,15 @@ export class MemoryStore implements LockStore {
     return lock.expiresAt && lock.expiresAt < Date.now()
   }
 
-  async extend(_key: string, _duration: Duration) {}
+  /**
+   * Extend a lock
+   */
+  async extend(key: string, owner: string, duration: number) {
+    const lock = this.#locks.get(key)
+    if (!lock || lock.owner !== owner) throw new E_LOCK_NOT_OWNED()
+
+    lock.expiresAt = this.#computeExpiresAt(duration)
+  }
 
   /**
    * Save a lock

@@ -1,7 +1,7 @@
 import { Redis as IoRedis } from 'ioredis'
 
-import { E_RELEASE_NOT_OWNED } from '../errors.js'
-import type { Duration, LockStore, RedisStoreOptions } from '../types/main.js'
+import { E_LOCK_NOT_OWNED, E_RELEASE_NOT_OWNED } from '../errors.js'
+import type { LockStore, RedisStoreOptions } from '../types/main.js'
 
 /**
  * Create a new Redis store
@@ -22,10 +22,6 @@ export class RedisStore implements LockStore {
     } else {
       this.#connection = new IoRedis(options.connection)
     }
-  }
-
-  async extend(_key: string, _duration: Duration) {
-    throw new Error('Method not implemented.')
   }
 
   /**
@@ -70,6 +66,22 @@ export class RedisStore implements LockStore {
 
     const result = await this.#connection.setnx(key, owner)
     return result === 1
+  }
+
+  /**
+   * Extend a lock
+   */
+  async extend(key: string, owner: string, duration: number) {
+    const lua = `
+      if redis.call("get", KEYS[1]) == ARGV[1] then
+        return redis.call("pexpire", KEYS[1], ARGV[2])
+      else
+        return 0
+      end
+    `
+
+    const result = await this.#connection.eval(lua, 1, key, owner, duration)
+    if (result === 0) throw new E_LOCK_NOT_OWNED()
   }
 
   /**

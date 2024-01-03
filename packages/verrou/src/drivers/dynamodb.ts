@@ -8,9 +8,8 @@ import {
   ResourceInUseException,
 } from '@aws-sdk/client-dynamodb'
 
-import { E_RELEASE_NOT_OWNED } from '../errors.js'
-import type { DynamoDbOptions } from '../types/drivers.js'
-import type { Duration, LockStore } from '../types/main.js'
+import type { LockStore, DynamoDbOptions } from '../types/main.js'
+import { E_LOCK_NOT_OWNED, E_RELEASE_NOT_OWNED } from '../errors.js'
 
 /**
  * Create a DynamoDB store.
@@ -143,8 +142,24 @@ export class DynamoDBStore implements LockStore {
     return result.Item !== undefined && !isExpired
   }
 
-  async extend(_key: string, _duration: Duration) {
-    throw new Error('Method not implemented.')
+  async extend(key: string, owner: string, duration: number) {
+    const command = new PutItemCommand({
+      TableName: this.#tableName,
+      Item: {
+        key: { S: key },
+        owner: { S: owner },
+        expires_at: { N: (Date.now() + duration).toString() },
+      },
+      ConditionExpression: '#owner = :owner',
+      ExpressionAttributeNames: { '#owner': 'owner' },
+      ExpressionAttributeValues: { ':owner': { S: owner } },
+    })
+
+    try {
+      await this.#client.send(command)
+    } catch (err) {
+      throw new E_LOCK_NOT_OWNED()
+    }
   }
 
   /**

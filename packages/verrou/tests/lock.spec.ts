@@ -113,4 +113,43 @@ test.group('Lock', () => {
 
     assert.deepEqual(result, 'foo')
   })
+
+  test('use default ttl when not specified', async ({ assert }) => {
+    assert.plan(1)
+
+    class FakeStore extends NullStore {
+      async extend(_key: string, _owner: string, duration: number) {
+        assert.deepEqual(duration, 1000)
+      }
+    }
+
+    const lock = new Lock('foo', new FakeStore(), { retry: {}, logger: noopLogger() }, 'bar', 1000)
+    await lock.extend()
+  })
+
+  test('use specific ttl when specified', async ({ assert }) => {
+    assert.plan(1)
+
+    class FakeStore extends NullStore {
+      async extend(_key: string, _owner: string, duration: number) {
+        assert.deepEqual(duration, 2000)
+      }
+    }
+
+    const lock = new Lock('foo', new FakeStore(), { retry: {}, logger: noopLogger() }, 'bar', 1000)
+    await lock.extend(2000)
+  })
+
+  test('resolve string ttl', async ({ assert }) => {
+    assert.plan(1)
+
+    class FakeStore extends NullStore {
+      async extend(_key: string, _owner: string, duration: number) {
+        assert.deepEqual(duration, 2000)
+      }
+    }
+
+    const lock = new Lock('foo', new FakeStore(), { retry: {}, logger: noopLogger() }, 'bar', 1000)
+    await lock.extend('2s')
+  })
 })

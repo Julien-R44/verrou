@@ -1,7 +1,9 @@
 import { setTimeout } from 'node:timers/promises'
+import { InvalidArgumentsException } from '@poppinss/utils'
 
 import { E_LOCK_TIMEOUT } from './errors.js'
-import type { LockAcquireOptions, LockFactoryConfig, LockStore } from './types/main.js'
+import { resolveDuration } from './helpers.js'
+import type { Duration, LockAcquireOptions, LockFactoryConfig, LockStore } from './types/main.js'
 
 export class Lock {
   #owner: string
@@ -89,6 +91,16 @@ export class Lock {
    */
   async isExpired() {
     return false
+  }
+
+  /**
+   * Extends the lock TTL
+   */
+  async extend(ttl?: Duration) {
+    const resolvedTtl = ttl ? resolveDuration(ttl) : this.ttl
+    if (!resolvedTtl) throw new InvalidArgumentsException('Cannot extend a lock without TTL')
+
+    await this.lockStore.extend(this.key, this.#owner, resolvedTtl)
   }
 
   /**
