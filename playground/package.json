@@ -1,15 +1,6 @@
 {
   "name": "@verrou/playground",
   "type": "module",
-  "version": "0.0.0",
-  "description": "",
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "ISC",
-  "keywords": [],
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "dependencies": {
     "verrou": "workspace:*"
   }
