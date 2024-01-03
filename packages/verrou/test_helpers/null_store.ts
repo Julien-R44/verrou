@@ -1,4 +1,4 @@
-import type { Duration, LockStore } from '../src/types/main.js'
+import type { LockStore } from '../src/types/main.js'
 
 export class NullStore implements LockStore {
   async save(_key: string): Promise<boolean> {
