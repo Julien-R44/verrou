@@ -24,6 +24,12 @@
     "category": "Guides"
   },
   {
+    "permalink": "api",
+    "title": "API",
+    "contentPath": "./api.md",
+    "category": "Guides"
+  },
+  {
     "permalink": "logging",
     "title": "Logging",
     "contentPath": "./digging_deeper/logging.md",
