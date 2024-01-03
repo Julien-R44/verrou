@@ -4,18 +4,18 @@ import type { MutexInterface } from 'async-mutex'
 import { E_RELEASE_NOT_OWNED } from '../errors.js'
 import type { Duration, LockStore } from '../types/main.js'
 
-/**
- * Create a new memory store
- */
-export function memoryStore() {
-  return { factory: () => new MemoryStore() }
-}
-
 type MemoryLockEntry = {
   mutex: MutexInterface
   releaser?: () => void
   owner: string
   expiresAt?: number
+}
+
+/**
+ * Create a new memory store
+ */
+export function memoryStore() {
+  return { factory: () => new MemoryStore() }
 }
 
 export class MemoryStore implements LockStore {
@@ -34,16 +34,25 @@ export class MemoryStore implements LockStore {
     return lock
   }
 
-  #expiresAt(ttl: number | null) {
+  /**
+   * Compute the expiration date of a lock
+   */
+  #computeExpiresAt(ttl: number | null) {
     return ttl ? Date.now() + ttl : Number.POSITIVE_INFINITY
   }
 
+  /**
+   * Check if lock is expired
+   */
   #isLockEntryExpired(lock: MemoryLockEntry) {
     return lock.expiresAt && lock.expiresAt < Date.now()
   }
 
   async extend(_key: string, _duration: Duration) {}
 
+  /**
+   * Save a lock
+   */
   async save(key: string, owner: string, ttl: number | null) {
     try {
       const lock = this.getOrCreateForKey(key, owner)
@@ -51,7 +60,7 @@ export class MemoryStore implements LockStore {
       if (this.#isLockEntryExpired(lock)) lock.releaser?.()
 
       lock.releaser = await tryAcquire(lock.mutex).acquire()
-      lock.expiresAt = this.#expiresAt(ttl)
+      lock.expiresAt = this.#computeExpiresAt(ttl)
 
       return true
     } catch {
@@ -59,6 +68,9 @@ export class MemoryStore implements LockStore {
     }
   }
 
+  /**
+   * Delete a lock
+   */
   async delete(key: string, owner: string) {
     const mutex = this.#locks.get(key)
 
@@ -68,6 +80,9 @@ export class MemoryStore implements LockStore {
     mutex.releaser()
   }
 
+  /**
+   * Check if a lock exists
+   */
   async exists(key: string) {
     const lock = this.#locks.get(key)
     if (!lock || this.#isLockEntryExpired(lock)) return false

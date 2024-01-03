@@ -66,15 +66,17 @@ export class DatabaseStore implements LockStore {
     })
   }
 
-  extend(_key: string, _duration: Duration): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
-
-  #expireAt(ttl: number | null) {
+  /**
+   * Compute the expiration date based on the provided TTL
+   */
+  #computeExpiresAt(ttl: number | null) {
     if (ttl) return Date.now() + ttl
     return null
   }
 
+  /**
+   * Get the current owner of given lock key
+   */
   async #getCurrentOwner(key: string) {
     await this.#initialized
     const result = await this.#connection
@@ -86,12 +88,25 @@ export class DatabaseStore implements LockStore {
     return result?.owner
   }
 
+  extend(_key: string, _duration: Duration): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  /**
+   * Save a new lock
+   *
+   * We basically rely on primary key constraint to ensure the lock is
+   * unique.
+   *
+   * If the lock already exists, we check if it's expired. If it is, we
+   * update it with the new owner and expiration date.
+   */
   async save(key: string, owner: string, ttl: number | null) {
     try {
       await this.#initialized
       await this.#connection
         .table(this.#tableName)
-        .insert({ key, owner, expiration: this.#expireAt(ttl) })
+        .insert({ key, owner, expiration: this.#computeExpiresAt(ttl) })
 
       return true
     } catch (error) {
@@ -99,12 +114,15 @@ export class DatabaseStore implements LockStore {
         .table(this.#tableName)
         .where('key', key)
         .where('expiration', '<=', Date.now())
-        .update({ owner, expiration: this.#expireAt(ttl) })
+        .update({ owner, expiration: this.#computeExpiresAt(ttl) })
 
-      return updated === 1
+      return updated >= 1
     }
   }
 
+  /**
+   * Delete a lock
+   */
   async delete(key: string, owner: string): Promise<void> {
     const currentOwner = await this.#getCurrentOwner(key)
     if (currentOwner !== owner) throw new E_RELEASE_NOT_OWNED()
@@ -112,6 +130,9 @@ export class DatabaseStore implements LockStore {
     await this.#connection.table(this.#tableName).where('key', key).where('owner', owner).delete()
   }
 
+  /**
+   * Check if a lock exists
+   */
   async exists(key: string) {
     await this.#initialized
     const result = await this.#connection
@@ -126,6 +147,9 @@ export class DatabaseStore implements LockStore {
     return result.expiration > Date.now()
   }
 
+  /**
+   * Disconnect knex connection
+   */
   disconnect() {
     return this.#connection.destroy()
   }

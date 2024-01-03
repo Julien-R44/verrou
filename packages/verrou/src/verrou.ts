@@ -1,5 +1,5 @@
 import { LockFactory } from './lock_factory.js'
-import type { StoreFactory } from './types/main.js'
+import type { Duration, StoreFactory } from './types/main.js'
 
 /**
  * Verrou is the main class of the library. It is used to create locks
@@ -47,8 +47,17 @@ export class Verrou<KnownStores extends Record<string, StoreFactory>> {
   /**
    * Create a new lock using the default store
    */
-  createLock(name: string) {
-    return this.use(this.#defaultStoreName).createLock(name)
+  createLock(name: string, ttl?: Duration) {
+    return this.use(this.#defaultStoreName).createLock(name, ttl)
+  }
+
+  /**
+   * Restore a lock from a previous owner. This is particularly useful
+   * if you want to release a lock from a different process than the one
+   * that acquired it.
+   */
+  restoreLock(name: string, owner: string, ttl?: Duration) {
+    return this.use(this.#defaultStoreName).restoreLock(name, owner, ttl)
   }
 
   /**

@@ -41,8 +41,8 @@ export class Lock {
    * Acquire the lock
    */
   async acquire(options?: LockAcquireOptions) {
-    const start = Date.now()
     let attemptsDone = 0
+    const start = Date.now()
     const attemptsMax =
       options?.retry?.attempts ?? this.#config.retry.attempts ?? Number.POSITIVE_INFINITY
 
@@ -62,20 +62,6 @@ export class Lock {
   }
 
   /**
-   * Release the lock
-   */
-  async release() {
-    await this.lockStore.delete(this.key, this.#owner)
-  }
-
-  /**
-   * Returns true if the lock is currently locked
-   */
-  async isLocked() {
-    return await this.lockStore.exists(this.key)
-  }
-
-  /**
    * Acquire the lock, run the callback and release the lock automatically
    * after the callback is done.
    * Also returns the callback return value
@@ -87,5 +73,19 @@ export class Lock {
     } finally {
       await this.release()
     }
+  }
+
+  /**
+   * Release the lock
+   */
+  async release() {
+    await this.lockStore.delete(this.key, this.#owner)
+  }
+
+  /**
+   * Returns true if the lock is currently locked
+   */
+  async isLocked() {
+    return await this.lockStore.exists(this.key)
   }
 }

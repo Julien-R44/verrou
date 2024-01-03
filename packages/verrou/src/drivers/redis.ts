@@ -11,21 +11,26 @@ export function redisStore(options: RedisStoreOptions) {
 }
 
 export class RedisStore implements LockStore {
+  /**
+   * IORedis connection instance
+   */
   #connection: IoRedis
 
   constructor(options: RedisStoreOptions) {
     if (options.connection instanceof IoRedis) {
       this.#connection = options.connection
-      return
+    } else {
+      this.#connection = new IoRedis(options.connection)
     }
-
-    this.#connection = new IoRedis(options.connection)
   }
 
   async extend(_key: string, _duration: Duration) {
     throw new Error('Method not implemented.')
   }
 
+  /**
+   * Delete a lock
+   */
   async delete(key: string, owner: string) {
     const lua = `
       if redis.call("get", KEYS[1]) == ARGV[1] then
@@ -39,11 +44,17 @@ export class RedisStore implements LockStore {
     if (result === 0) throw new E_RELEASE_NOT_OWNED()
   }
 
+  /**
+   * Check if a lock exists
+   */
   async exists(key: string): Promise<boolean> {
     const result = await this.#connection.get(key)
     return !!result
   }
 
+  /**
+   * Save a lock
+   */
   async save(key: string, owner: string, ttl: number | null) {
     if (ttl) {
       const result = await this.#connection.set(key, owner, 'PX', ttl, 'NX')
@@ -54,6 +65,9 @@ export class RedisStore implements LockStore {
     return result === 1
   }
 
+  /**
+   * Disconnect from Redis
+   */
   async disconnect() {
     await this.#connection.quit()
   }

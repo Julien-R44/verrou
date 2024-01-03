@@ -257,6 +257,29 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
     assert.isFalse(await lock.isLocked())
   })
 
+  test('able to acquire a lock that is expired', async ({ assert }) => {
+    const provider = new LockFactory(new store(config), {
+      retry: {
+        attempts: 1,
+      },
+    })
+
+    const lock1 = provider.createLock('foo', 500)
+    const lock2 = provider.createLock('foo')
+
+    await lock1.acquire()
+
+    await sleep(600)
+
+    assert.isFalse(await lock1.isLocked())
+    assert.isFalse(await lock2.isLocked())
+
+    await lock2.acquire()
+
+    assert.isTrue(await lock2.isLocked())
+    assert.isTrue(await lock1.isLocked())
+  })
+
   test('null ttl so that lock never expires', async ({ assert }) => {
     const provider = new LockFactory(new store(config))
     const lock = provider.createLock('foo', null)
