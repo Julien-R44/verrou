@@ -1,5 +1,6 @@
 import { test } from '@japa/runner'
 import { noopLogger } from 'typescript-log'
+import { setTimeout } from 'node:timers/promises'
 
 import { Lock } from '../src/lock.js'
 import { E_LOCK_TIMEOUT } from '../src/errors.js'
@@ -155,5 +156,118 @@ test.group('Lock', () => {
 
     const lock = new Lock('foo', new FakeStore(), { retry: {}, logger: noopLogger() }, 'bar', 1000)
     await lock.extend('2s')
+  })
+
+  test('isExpired is false when lock has no expiration time', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
+
+    assert.deepEqual(lock.isExpired(), false)
+
+    await lock.acquire()
+
+    assert.deepEqual(lock.isExpired(), false)
+  })
+
+  test('isExpired is true when lock has expired', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+
+    assert.deepEqual(lock.isExpired(), false)
+
+    await lock.acquire()
+
+    assert.deepEqual(lock.isExpired(), false)
+    await setTimeout(200)
+    assert.deepEqual(lock.isExpired(), true)
+  })
+
+  test('isExpired is extended when extending the lock', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+
+    assert.deepEqual(lock.isExpired(), false)
+
+    await lock.acquire()
+
+    assert.deepEqual(lock.isExpired(), false)
+    await lock.extend(200)
+    await setTimeout(100)
+    assert.deepEqual(lock.isExpired(), false)
+    await setTimeout(200)
+    assert.deepEqual(lock.isExpired(), true)
+  })
+
+  test('getRemainingTime returns null when lock has no expiration time', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
+
+    assert.deepEqual(lock.getRemainingTime(), null)
+
+    await lock.acquire()
+
+    assert.deepEqual(lock.getRemainingTime(), null)
+  })
+
+  test('getRemainingTime returns remaining time when lock has expiration time', async ({
+    assert,
+  }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+
+    assert.deepEqual(lock.getRemainingTime(), null)
+
+    await lock.acquire()
+
+    assert.closeTo(lock.getRemainingTime()!, 100, 10)
+    await setTimeout(200)
+    assert.closeTo(lock.getRemainingTime()!, -100, 10)
+  })
+
+  test('getRemainingTime is extended when extending the lock', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+
+    assert.deepEqual(lock.getRemainingTime(), null)
+
+    await lock.acquire()
+
+    assert.closeTo(lock.getRemainingTime()!, 100, 10)
+    await lock.extend(200)
+    assert.closeTo(lock.getRemainingTime()!, 200, 10)
+  })
+
+  test('getRemainingTime doesnt get extended when extend fails', async ({ assert }) => {
+    class FakeStore extends NullStore {
+      async extend() {
+        throw new Error('foo')
+      }
+    }
+
+    const store = new FakeStore()
+    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+
+    assert.deepEqual(lock.getRemainingTime(), null)
+
+    await lock.acquire()
+
+    assert.closeTo(lock.getRemainingTime()!, 100, 10)
+    await assert.rejects(() => lock.extend(200))
+    assert.closeTo(lock.getRemainingTime()!, 100, 10)
+  })
+
+  test('expiration time is null when lock is not acquired', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, { retry: { attempts: 1 }, logger: noopLogger() })
+    const lock2 = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 1000)
+
+    assert.deepEqual(lock.getRemainingTime(), null)
+
+    await lock2.acquire()
+    assert.closeTo(lock2.getRemainingTime()!, 1000, 10)
+
+    await lock.acquire().catch(() => {})
+    assert.deepEqual(lock.getRemainingTime(), null)
+    assert.closeTo(lock2.getRemainingTime()!, 1000, 200)
   })
 })

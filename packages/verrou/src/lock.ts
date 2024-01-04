@@ -6,16 +6,26 @@ import { resolveDuration } from './helpers.js'
 import type { Duration, LockAcquireOptions, LockFactoryConfig, LockStore } from './types/main.js'
 
 export class Lock {
+  #key: string
   #owner: string
+  #lockStore: LockStore
+  #ttl: number | null = null
+  #config: LockFactoryConfig
+  #expirationTime: number | null = null
 
   constructor(
-    protected readonly key: string,
-    protected readonly lockStore: LockStore,
-    protected config: LockFactoryConfig,
+    key: string,
+    lockStore: LockStore,
+    config: LockFactoryConfig,
     owner?: string,
-    protected ttl?: number | null,
+    ttl?: number | null,
   ) {
+    this.#key = key
+    this.#config = config
+    this.#lockStore = lockStore
+    this.#expirationTime = null
     this.#owner = owner ?? this.#generateOwner()
+    this.#ttl = ttl ?? null
   }
 
   /**
@@ -36,26 +46,32 @@ export class Lock {
    * Acquire the lock
    */
   async acquire(options?: LockAcquireOptions) {
+    this.#expirationTime = null
+
     let attemptsDone = 0
     const start = Date.now()
     const attemptsMax =
-      options?.retry?.attempts ?? this.config.retry.attempts ?? Number.POSITIVE_INFINITY
+      options?.retry?.attempts ?? this.#config.retry.attempts ?? Number.POSITIVE_INFINITY
 
     while (attemptsDone++ < attemptsMax) {
-      const result = await this.lockStore.save(this.key, this.#owner, this.ttl)
-      if (result) break
+      const now = Date.now()
+      const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
+      if (result) {
+        this.#expirationTime = this.#ttl ? now + this.#ttl : null
+        break
+      }
 
       if (attemptsDone === attemptsMax) throw new E_LOCK_TIMEOUT()
 
       const elapsed = Date.now() - start
-      if (this.config.retry.timeout && elapsed > this.config.retry.timeout) {
+      if (this.#config.retry.timeout && elapsed > this.#config.retry.timeout) {
         throw new E_LOCK_TIMEOUT()
       }
 
-      await setTimeout(this.config.retry.delay ?? 250)
+      await setTimeout(this.#config.retry.delay ?? 250)
     }
 
-    this.config.logger.debug({ key: this.key }, 'Lock acquired')
+    this.#config.logger.debug({ key: this.#key }, 'Lock acquired')
   }
 
   /**
@@ -76,37 +92,48 @@ export class Lock {
    * Force release the lock
    */
   async forceRelease() {
-    await this.lockStore.forceRelease(this.key)
+    await this.#lockStore.forceRelease(this.#key)
   }
 
   /**
    * Release the lock
    */
   async release() {
-    await this.lockStore.delete(this.key, this.#owner)
+    await this.#lockStore.delete(this.#key, this.#owner)
   }
 
   /**
    * Returns true if the lock is expired
    */
-  async isExpired() {
-    return false
+  isExpired() {
+    if (this.#expirationTime === null) return false
+    return this.#expirationTime < Date.now()
+  }
+
+  /**
+   * Get the remaining time before the lock expires
+   */
+  getRemainingTime() {
+    if (this.#expirationTime === null) return null
+    return this.#expirationTime - Date.now()
   }
 
   /**
    * Extends the lock TTL
    */
   async extend(ttl?: Duration) {
-    const resolvedTtl = ttl ? resolveDuration(ttl) : this.ttl
+    const resolvedTtl = ttl ? resolveDuration(ttl) : this.#ttl
     if (!resolvedTtl) throw new InvalidArgumentsException('Cannot extend a lock without TTL')
 
-    await this.lockStore.extend(this.key, this.#owner, resolvedTtl)
+    const now = Date.now()
+    await this.#lockStore.extend(this.#key, this.#owner, resolvedTtl)
+    this.#expirationTime = now + resolvedTtl
   }
 
   /**
    * Returns true if the lock is currently locked
    */
   async isLocked() {
-    return await this.lockStore.exists(this.key)
+    return await this.#lockStore.exists(this.#key)
   }
 }

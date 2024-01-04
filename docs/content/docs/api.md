@@ -76,7 +76,7 @@ Check if the lock is expired.
 
 ```ts
 const lock = verrou.createLock('key', '10s')
-const isExpired = await lock.isExpired()
+const isExpired = lock.isExpired()
 ```
 
 ### `extend`
@@ -104,7 +104,7 @@ Get the remaining time before the lock expires.
 const lock = verrou.createLock('key', '10s')
 await lock.acquire()
 
-const remainingTime = await lock.getRemainingTime()
+const remainingTime = lock.getRemainingTime()
 ```
 
 ### `forceRelease`
