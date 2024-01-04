@@ -1,6 +1,6 @@
 import { Redis as IoRedis } from 'ioredis'
 
-import { E_LOCK_NOT_OWNED, E_RELEASE_NOT_OWNED } from '../errors.js'
+import { E_LOCK_NOT_OWNED } from '../errors.js'
 import type { LockStore, RedisStoreOptions } from '../types/main.js'
 
 /**
@@ -37,7 +37,7 @@ export class RedisStore implements LockStore {
     `
 
     const result = await this.#connection.eval(lua, 1, key, owner)
-    if (result === 0) throw new E_RELEASE_NOT_OWNED()
+    if (result === 0) throw new E_LOCK_NOT_OWNED()
   }
 
   /**

@@ -1,8 +1,8 @@
 import { Mutex, tryAcquire } from 'async-mutex'
 import type { MutexInterface } from 'async-mutex'
 
+import { E_LOCK_NOT_OWNED } from '../errors.js'
 import type { LockStore } from '../types/main.js'
-import { E_LOCK_NOT_OWNED, E_RELEASE_NOT_OWNED } from '../errors.js'
 
 type MemoryLockEntry = {
   mutex: MutexInterface
@@ -82,8 +82,8 @@ export class MemoryStore implements LockStore {
   async delete(key: string, owner: string) {
     const mutex = this.#locks.get(key)
 
-    if (!mutex || !mutex.releaser) throw new E_RELEASE_NOT_OWNED()
-    if (mutex.owner !== owner) throw new E_RELEASE_NOT_OWNED()
+    if (!mutex || !mutex.releaser) throw new E_LOCK_NOT_OWNED()
+    if (mutex.owner !== owner) throw new E_LOCK_NOT_OWNED()
 
     mutex.releaser()
   }

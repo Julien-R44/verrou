@@ -8,8 +8,8 @@ import {
   ResourceInUseException,
 } from '@aws-sdk/client-dynamodb'
 
+import { E_LOCK_NOT_OWNED } from '../errors.js'
 import type { LockStore, DynamoDbOptions } from '../types/main.js'
-import { E_LOCK_NOT_OWNED, E_RELEASE_NOT_OWNED } from '../errors.js'
 
 /**
  * Create a DynamoDB store.
@@ -110,7 +110,7 @@ export class DynamoDBStore implements LockStore {
     try {
       await this.#client.send(command)
     } catch (err) {
-      throw new E_RELEASE_NOT_OWNED()
+      throw new E_LOCK_NOT_OWNED()
     }
   }
 

@@ -1,6 +1,6 @@
 import knex, { type Knex } from 'knex'
 
-import { E_LOCK_NOT_OWNED, E_RELEASE_NOT_OWNED } from '../errors.js'
+import { E_LOCK_NOT_OWNED } from '../errors.js'
 import type { DatabaseStoreOptions, LockStore } from '../types/main.js'
 
 /**
@@ -121,7 +121,7 @@ export class DatabaseStore implements LockStore {
    */
   async delete(key: string, owner: string): Promise<void> {
     const currentOwner = await this.#getCurrentOwner(key)
-    if (currentOwner !== owner) throw new E_RELEASE_NOT_OWNED()
+    if (currentOwner !== owner) throw new E_LOCK_NOT_OWNED()
 
     await this.#connection.table(this.#tableName).where('key', key).where('owner', owner).delete()
   }

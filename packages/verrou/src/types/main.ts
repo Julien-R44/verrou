@@ -61,17 +61,27 @@ export interface LockFactoryConfig {
 
 export interface LockStore {
   /**
-   * Save the lock in the store if not already locked
+   * Save the lock in the store if not already locked by another owner
+   *
+   * @param key The key to lock
+   * @param owner The owner of the lock
+   * @param ttl The time to live of the lock in milliseconds. Null means no expiration
+   *
+   * @returns True if the lock was acquired, false otherwise
    */
-  save(key: string, owner: string, ttl: number | null | undefined): Promise<boolean>
+  save(key: string, owner: string, ttl: number | null): Promise<boolean>
 
   /**
-   * Delete the lock from the store
+   * Delete the lock from the store if it is owned by the owner
+   * Otherwise throws a E_LOCK_NOT_OWNED error
+   *
+   * @param key The key to delete
+   * @param owner The owner of the lock
    */
   delete(key: string, owner: string): Promise<void>
 
   /**
-   * Force delete the lock from the store
+   * Force delete the lock from the store. No check is made on the owner
    */
   forceRelease(key: string): Promise<void>
 
@@ -81,12 +91,13 @@ export interface LockStore {
   exists(key: string): Promise<boolean>
 
   /**
-   * Extend the lock expiration
+   * Extend the lock expiration. Throws an error if the lock is not owned by the owner
+   * Duration is in milliseconds
    */
   extend(key: string, owner: string, duration: number): Promise<void>
 
   /**
-   * Disconnect the store
+   * Disconnect the store from the underlying storage ( when applicable )
    */
   disconnect(): Promise<void>
 }
