@@ -69,7 +69,8 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
     await lock.acquire()
 
     await lock2.release()
-  }).throws(/It looks like you are trying to release a lock that is not acquired by you/)
+    // @ts-expect-error poppinss/utils typing bug
+  }).throws(E_LOCK_NOT_OWNED.message, E_LOCK_NOT_OWNED)
 
   test('throws timeout error when lock is not acquired in time', async () => {
     const provider = new LockFactory(new store(config), {
