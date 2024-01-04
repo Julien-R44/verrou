@@ -16,6 +16,7 @@ Acquire the lock. If the lock is already acquired, it will wait until it is rele
 const lock = verrou.createLock('key', '10s')
 await lock.acquire()
 await lock.acquire({ retry: { timeout: 1000 } })
+await lock.acquire({ retry: { timeout: '1s' } })
 ```
 
 Accept an optional object with the following properties:
