@@ -21,4 +21,13 @@ test.group('Lock Factory', () => {
     assert.closeTo(restoredLock.getRemainingTime()!, 900, 100)
     assert.deepEqual(restoredLock.getRemainingTime(), lock.getRemainingTime())
   })
+
+  test('can pass string as duration', async () => {
+    const store = new MemoryStore()
+    const lockFactory = new LockFactory(store, {
+      retry: { attempts: 10, delay: '1s', timeout: '10s' },
+    })
+
+    lockFactory.createLock('foo', '1s')
+  })
 })

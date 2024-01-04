@@ -1,5 +1,9 @@
 import type { LockStore } from '../src/types/main.js'
 
+/**
+ * A null store that does nothing
+ * Useful for testing and extending/overriding
+ */
 export class NullStore implements LockStore {
   async save(_key: string): Promise<boolean> {
     return true

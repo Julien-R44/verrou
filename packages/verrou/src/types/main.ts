@@ -11,11 +11,11 @@ export * from './drivers.js'
  * - Null to indicate no expiration
  */
 export type Duration = number | string | null
+export type StoreFactory = { driver: { factory: () => LockStore } }
 
-export type StoreFactory = {
-  driver: { factory: () => LockStore }
-}
-
+/**
+ * Shape of a lock serialized through the `Lock.serialize` method
+ */
 export interface SerializedLock {
   key: string
   owner: string
@@ -26,36 +26,51 @@ export interface SerializedLock {
 export interface RetryConfig {
   /**
    * The number of times to retry the operation before giving up.
-   * Null means retry indefinitely
    *
-   * @default null
+   * @default Number.POSITIVE_INFINITY
    */
-  attempts?: number | null
+  attempts?: number
 
   /**
    * The delay between retries
    *
    * @default 250ms
    */
-  delay?: number
+  delay?: Duration
 
   /**
    * The maximum amount of time before giving up to acquire the lock
+   * If not specified, the operation will retry indefinitely
+   *
+   * @default undefined ( no timeout )
    */
-  timeout?: number
+  timeout?: Duration
 }
 
+/**
+ * Options passed to the Lock.acquire method
+ */
 export interface LockAcquireOptions {
   retry?: RetryConfig
 }
 
+/**
+ * Options passed to the LockFactory constructor
+ */
 export interface LockFactoryOptions {
   retry?: RetryConfig
   logger?: Logger
 }
 
-export interface LockFactoryConfig {
-  retry: RetryConfig
+/**
+ * Resolved configuration values
+ */
+export interface ResolvedLockConfig {
+  retry: {
+    attempts: number
+    delay: number
+    timeout?: number
+  }
   logger: Logger
 }
 

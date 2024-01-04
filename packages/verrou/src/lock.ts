@@ -6,7 +6,7 @@ import { resolveDuration } from './helpers.js'
 import type {
   Duration,
   LockAcquireOptions,
-  LockFactoryConfig,
+  ResolvedLockConfig,
   LockStore,
   SerializedLock,
 } from './types/main.js'
@@ -16,13 +16,13 @@ export class Lock {
   #owner: string
   #lockStore: LockStore
   #ttl: number | null = null
-  #config: LockFactoryConfig
+  #config: ResolvedLockConfig
   #expirationTime: number | null = null
 
   constructor(
     key: string,
     lockStore: LockStore,
-    config: LockFactoryConfig,
+    config: ResolvedLockConfig,
     owner?: string,
     ttl?: number | null,
     expirationTime?: number | null,
@@ -64,14 +64,15 @@ export class Lock {
   /**
    * Acquire the lock
    */
-  async acquire(options?: LockAcquireOptions) {
+  async acquire(options: LockAcquireOptions = {}) {
     this.#expirationTime = null
 
     let attemptsDone = 0
-    const start = Date.now()
-    const attemptsMax =
-      options?.retry?.attempts ?? this.#config.retry.attempts ?? Number.POSITIVE_INFINITY
+    const attemptsMax = options.retry?.attempts ?? this.#config.retry.attempts
+    const delay = resolveDuration(options.retry?.delay, this.#config.retry.delay)
+    const timeout = resolveDuration(options.retry?.timeout, this.#config.retry.timeout)
 
+    const start = Date.now()
     while (attemptsDone++ < attemptsMax) {
       const now = Date.now()
       const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
@@ -83,11 +84,9 @@ export class Lock {
       if (attemptsDone === attemptsMax) throw new E_LOCK_TIMEOUT()
 
       const elapsed = Date.now() - start
-      if (this.#config.retry.timeout && elapsed > this.#config.retry.timeout) {
-        throw new E_LOCK_TIMEOUT()
-      }
+      if (timeout && elapsed > timeout) throw new E_LOCK_TIMEOUT()
 
-      await setTimeout(this.#config.retry.delay ?? 250)
+      await setTimeout(delay)
     }
 
     this.#config.logger.debug({ key: this.#key }, 'Lock acquired')

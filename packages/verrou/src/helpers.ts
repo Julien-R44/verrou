@@ -3,18 +3,18 @@ import string from '@poppinss/utils/string'
 import type { Duration } from './types/main.js'
 
 /**
- * Resolve a TTL value to a number in milliseconds
+ * Resolve a Duration to a number in milliseconds
  */
-export function resolveDuration(ttl?: Duration, defaultTtl: Duration = 30_000) {
-  if (typeof ttl === 'number') return ttl
-  if (ttl === null) return undefined
+export function resolveDuration(duration?: Duration, defaultValue: Duration = 30_000) {
+  if (typeof duration === 'number') return duration
+  if (duration === null) return undefined
 
-  if (ttl === undefined) {
-    if (typeof defaultTtl === 'number') return defaultTtl
-    if (typeof defaultTtl === 'string') return string.milliseconds.parse(defaultTtl)
+  if (duration === undefined) {
+    if (typeof defaultValue === 'number') return defaultValue
+    if (typeof defaultValue === 'string') return string.milliseconds.parse(defaultValue)
 
     return undefined
   }
 
-  return string.milliseconds.parse(ttl)
+  return string.milliseconds.parse(duration)
 }

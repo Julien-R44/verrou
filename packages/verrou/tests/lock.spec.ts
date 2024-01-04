@@ -7,10 +7,19 @@ import { E_LOCK_TIMEOUT } from '../src/errors.js'
 import { MemoryStore } from '../src/drivers/memory.js'
 import { NullStore } from '../test_helpers/null_store.js'
 
+const defaultOptions = {
+  retry: {
+    attempts: Number.POSITIVE_INFINITY,
+    delay: 10,
+    timeout: undefined,
+  },
+  logger: noopLogger(),
+}
+
 test.group('Lock', () => {
   test('acquire', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
+    const lock = new Lock('foo', store, defaultOptions)
 
     assert.deepEqual(await lock.isLocked(), false)
 
@@ -84,7 +93,7 @@ test.group('Lock', () => {
 
     const start = Date.now()
     const lock = new Lock('foo', new FakeStore(), {
-      retry: { timeout: 100, delay: 10 },
+      retry: { timeout: 100, delay: 10, attempts: Number.POSITIVE_INFINITY },
       logger: noopLogger(),
     })
 
@@ -99,7 +108,7 @@ test.group('Lock', () => {
     assert.plan(3)
 
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
+    const lock = new Lock('foo', store, defaultOptions)
 
     assert.deepEqual(await lock.isLocked(), false)
 
@@ -112,7 +121,7 @@ test.group('Lock', () => {
 
   test('run should return callback result', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
+    const lock = new Lock('foo', store, defaultOptions)
 
     const result = await lock.run(async () => 'foo')
 
@@ -128,7 +137,7 @@ test.group('Lock', () => {
       }
     }
 
-    const lock = new Lock('foo', new FakeStore(), { retry: {}, logger: noopLogger() }, 'bar', 1000)
+    const lock = new Lock('foo', new FakeStore(), defaultOptions, 'bar', 1000)
     await lock.extend()
   })
 
@@ -141,7 +150,7 @@ test.group('Lock', () => {
       }
     }
 
-    const lock = new Lock('foo', new FakeStore(), { retry: {}, logger: noopLogger() }, 'bar', 1000)
+    const lock = new Lock('foo', new FakeStore(), defaultOptions, 'bar', 1000)
     await lock.extend(2000)
   })
 
@@ -154,13 +163,13 @@ test.group('Lock', () => {
       }
     }
 
-    const lock = new Lock('foo', new FakeStore(), { retry: {}, logger: noopLogger() }, 'bar', 1000)
+    const lock = new Lock('foo', new FakeStore(), defaultOptions, 'bar', 1000)
     await lock.extend('2s')
   })
 
   test('isExpired is false when lock has no expiration time', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
+    const lock = new Lock('foo', store, defaultOptions)
 
     assert.deepEqual(lock.isExpired(), false)
 
@@ -171,7 +180,7 @@ test.group('Lock', () => {
 
   test('isExpired is true when lock has expired', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+    const lock = new Lock('foo', store, defaultOptions, undefined, 100)
 
     assert.deepEqual(lock.isExpired(), false)
 
@@ -184,7 +193,7 @@ test.group('Lock', () => {
 
   test('isExpired is extended when extending the lock', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+    const lock = new Lock('foo', store, defaultOptions, undefined, 100)
 
     assert.deepEqual(lock.isExpired(), false)
 
@@ -200,7 +209,7 @@ test.group('Lock', () => {
 
   test('getRemainingTime returns null when lock has no expiration time', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() })
+    const lock = new Lock('foo', store, defaultOptions)
 
     assert.deepEqual(lock.getRemainingTime(), null)
 
@@ -213,7 +222,7 @@ test.group('Lock', () => {
     assert,
   }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+    const lock = new Lock('foo', store, defaultOptions, undefined, 100)
 
     assert.deepEqual(lock.getRemainingTime(), null)
 
@@ -226,7 +235,7 @@ test.group('Lock', () => {
 
   test('getRemainingTime is extended when extending the lock', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+    const lock = new Lock('foo', store, defaultOptions, undefined, 100)
 
     assert.deepEqual(lock.getRemainingTime(), null)
 
@@ -245,7 +254,7 @@ test.group('Lock', () => {
     }
 
     const store = new FakeStore()
-    const lock = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 100)
+    const lock = new Lock('foo', store, defaultOptions, undefined, 100)
 
     assert.deepEqual(lock.getRemainingTime(), null)
 
@@ -258,8 +267,8 @@ test.group('Lock', () => {
 
   test('expiration time is null when lock is not acquired', async ({ assert }) => {
     const store = new MemoryStore()
-    const lock = new Lock('foo', store, { retry: { attempts: 1 }, logger: noopLogger() })
-    const lock2 = new Lock('foo', store, { retry: {}, logger: noopLogger() }, undefined, 1000)
+    const lock = new Lock('foo', store, { retry: { attempts: 1, delay: 10 }, logger: noopLogger() })
+    const lock2 = new Lock('foo', store, defaultOptions, undefined, 1000)
 
     assert.deepEqual(lock.getRemainingTime(), null)
 
@@ -269,5 +278,60 @@ test.group('Lock', () => {
     await lock.acquire().catch(() => {})
     assert.deepEqual(lock.getRemainingTime(), null)
     assert.closeTo(lock2.getRemainingTime()!, 1000, 200)
+  })
+
+  test('acquire options.retry.delay is used', async ({ assert }) => {
+    let attempts = 0
+    class FakeStore extends NullStore {
+      async save(_key: string) {
+        attempts++
+        if (attempts >= 2) return false
+        return true
+      }
+    }
+
+    const store = new FakeStore()
+    const lock = new Lock('foo', store, {
+      retry: { attempts: 2, delay: 400 },
+      logger: noopLogger(),
+    })
+
+    const lock2 = new Lock('foo', store, {
+      retry: { attempts: 2, delay: 100 },
+      logger: noopLogger(),
+    })
+
+    await lock2.acquire()
+
+    // @ts-ignore
+    await assert.rejects(() => lock.acquire({ retry: { attempts: 1 } }), E_LOCK_TIMEOUT.message)
+    assert.deepEqual(attempts, 2)
+
+    // @ts-ignore
+    await assert.rejects(() => lock.acquire({ retry: { attempts: 3 } }), E_LOCK_TIMEOUT.message)
+    assert.deepEqual(attempts, 5)
+  })
+
+  test('acquire options.timeout is used', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, {
+      retry: { attempts: Number.POSITIVE_INFINITY, delay: 400, timeout: 200 },
+      logger: noopLogger(),
+    })
+    const lock2 = new Lock('foo', store, {
+      retry: { attempts: Number.POSITIVE_INFINITY, delay: 400, timeout: 100 },
+      logger: noopLogger(),
+    })
+
+    await lock2.acquire()
+
+    const start = Date.now()
+    await assert.rejects(
+      () => lock.acquire({ retry: { attempts: Number.POSITIVE_INFINITY, timeout: 500 } }),
+      // @ts-ignore
+      E_LOCK_TIMEOUT.message,
+    )
+    const elapsed = Date.now() - start
+    assert.isAbove(elapsed, 500)
   })
 })
