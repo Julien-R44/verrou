@@ -16,6 +16,13 @@ export type StoreFactory = {
   driver: { factory: () => LockStore }
 }
 
+export interface SerializedLock {
+  key: string
+  owner: string
+  ttl: number | null
+  expirationTime: number | null
+}
+
 export interface RetryConfig {
   /**
    * The number of times to retry the operation before giving up.

@@ -165,8 +165,8 @@ router.get('/process-payment', async (req, res) => {
   await lock.acquire()
 
   myQueue.dispatch('process-payment', { 
-    paymentId: 123, 
-    lockOwner: lock.getOwner() 
+    paymentId: 123,
+    lock: lock.serialize()
   })
 })
 ```
@@ -177,9 +177,9 @@ So we dispatch a message to our queue with the lock owner. Now let's see how we 
 // title: worker.ts
 import { verrou } from './verrou.js'
 
-myQueue.on('process-payment', async ({ paymentId, lockOwner }) => {
+myQueue.on('process-payment', async ({ paymentId, lock }) => {
   // First we **restore** the lock with the lock owner
-  const lock = verrou.restoreLock('my-resource', lockOwner) 
+  const lock = verrou.restoreLock(lock)
 
   processPayment(paymentId)
 
@@ -188,7 +188,7 @@ myQueue.on('process-payment', async ({ paymentId, lockOwner }) => {
 })
 ```
 
-As you can see, we can restore a lock by calling the `restoreLock` method and passing the lock owner. This will create a new `Lock` instance with the same resource and owner. Then we can release it.
+As you can see, we can restore a lock by calling the `restoreLock` method and passing the serialized lock. This will create a new `Lock` instance with the same resource and owner. Then we can release it.
 
 Note that you can also use `lock.forceRelease()` to release a lock, no matter the owner.
 

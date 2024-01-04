@@ -1,7 +1,7 @@
 import { noopLogger, type Logger } from 'typescript-log'
 
 import { LockFactory } from './lock_factory.js'
-import type { Duration, StoreFactory } from './types/main.js'
+import type { Duration, SerializedLock, StoreFactory } from './types/main.js'
 
 /**
  * Verrou is the main class of the library. It is used to create locks
@@ -67,8 +67,8 @@ export class Verrou<KnownStores extends Record<string, StoreFactory>> {
    * if you want to release a lock from a different process than the one
    * that acquired it.
    */
-  restoreLock(name: string, owner: string, ttl?: Duration) {
-    return this.use(this.#defaultStoreName).restoreLock(name, owner, ttl)
+  restoreLock(lock: SerializedLock) {
+    return this.use(this.#defaultStoreName).restoreLock(lock)
   }
 
   /**

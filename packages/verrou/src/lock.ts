@@ -3,7 +3,13 @@ import { InvalidArgumentsException } from '@poppinss/utils'
 
 import { E_LOCK_TIMEOUT } from './errors.js'
 import { resolveDuration } from './helpers.js'
-import type { Duration, LockAcquireOptions, LockFactoryConfig, LockStore } from './types/main.js'
+import type {
+  Duration,
+  LockAcquireOptions,
+  LockFactoryConfig,
+  LockStore,
+  SerializedLock,
+} from './types/main.js'
 
 export class Lock {
   #key: string
@@ -19,11 +25,12 @@ export class Lock {
     config: LockFactoryConfig,
     owner?: string,
     ttl?: number | null,
+    expirationTime?: number | null,
   ) {
     this.#key = key
     this.#config = config
     this.#lockStore = lockStore
-    this.#expirationTime = null
+    this.#expirationTime = expirationTime ?? null
     this.#owner = owner ?? this.#generateOwner()
     this.#ttl = ttl ?? null
   }
@@ -40,6 +47,18 @@ export class Lock {
    */
   getOwner() {
     return this.#owner
+  }
+
+  /**
+   * Serialize the lock
+   */
+  serialize(): SerializedLock {
+    return {
+      key: this.#key,
+      owner: this.#owner,
+      ttl: this.#ttl,
+      expirationTime: this.#expirationTime,
+    }
   }
 
   /**

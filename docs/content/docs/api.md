@@ -132,10 +132,11 @@ First argument is the lock key. Second argument is optional and is the lock expi
 
 ### `restoreLock`
 
-Restore a lock with a given owner. Useful when sharing a lock between multiple processes. See [Sharing a lock between multiple processes](./usage.md#sharing-a-lock-between-multiple-processes) for more details.
+Restore a lock. Useful when sharing a lock between multiple processes. See [Sharing a lock between multiple processes](./usage.md#sharing-a-lock-between-multiple-processes) for more details.
 
 ```ts
-const lock = verrou.restoreLock('key', 'owner')
+const lock1 = verrou.createLock('key', 'owner')
+const lock2 = verrou.restoreLock(lock1.serialize())
 ```
 
 ### `disconnect`

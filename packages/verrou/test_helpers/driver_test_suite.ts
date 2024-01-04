@@ -193,7 +193,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
     await lock.acquire()
 
     const provider2 = new LockFactory(storeInstance)
-    const lock2 = provider2.restoreLock('foo', lock.getOwner())
+    const lock2 = provider2.restoreLock(lock.serialize())
 
     assert.isTrue(await lock2.isLocked())
     await lock2.release()

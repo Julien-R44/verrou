@@ -2,7 +2,13 @@ import { noopLogger } from 'typescript-log'
 
 import { Lock } from './lock.js'
 import { resolveDuration } from './helpers.js'
-import type { Duration, LockFactoryConfig, LockFactoryOptions, LockStore } from './types/main.js'
+import type {
+  Duration,
+  LockFactoryConfig,
+  LockFactoryOptions,
+  LockStore,
+  SerializedLock,
+} from './types/main.js'
 
 export class LockFactory {
   /**
@@ -37,8 +43,8 @@ export class LockFactory {
    * if you want to release a lock from a different process than the one
    * that acquired it.
    */
-  restoreLock(name: string, owner: string, ttl: Duration = LockFactory.#kDefaultTtl) {
-    return new Lock(name, this.store, this.#config, owner, resolveDuration(ttl))
+  restoreLock(lock: SerializedLock) {
+    return new Lock(lock.key, this.store, this.#config, lock.owner, lock.ttl, lock.expirationTime)
   }
 
   /**
