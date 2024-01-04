@@ -50,6 +50,23 @@ await lock.run({ retry: { timeout: '1000ms' } }, async () => {
 
 Accept an optional object with the same properties as `acquire`.
 
+### `tryAcquire`
+
+Try to acquire the lock immediately. If the lock is already acquired, it will throws a `E_LOCK_ALREADY_ACQUIRED` error.
+
+```ts
+import { errors } from '@verrou/core'
+
+const lock = verrou.createLock('key')
+try {
+  await lock.tryAcquire()
+} catch (err) {
+  if (err instanceof E_LOCK_ALREADY_ACQUIRED) {
+
+  }
+}
+```
+
 ### `isLocked`
 
 Check if the lock is acquired.

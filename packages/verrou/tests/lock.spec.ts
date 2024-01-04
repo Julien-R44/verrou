@@ -3,9 +3,9 @@ import { noopLogger } from 'typescript-log'
 import { setTimeout } from 'node:timers/promises'
 
 import { Lock } from '../src/lock.js'
-import { E_LOCK_TIMEOUT } from '../src/errors.js'
 import { MemoryStore } from '../src/drivers/memory.js'
 import { NullStore } from '../test_helpers/null_store.js'
+import { E_LOCK_ALREADY_ACQUIRED, E_LOCK_TIMEOUT } from '../src/errors.js'
 
 const defaultOptions = {
   retry: {
@@ -333,5 +333,31 @@ test.group('Lock', () => {
     )
     const elapsed = Date.now() - start
     assert.isAbove(elapsed, 500)
+  })
+
+  test('tryAcquire works', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, defaultOptions, undefined, 1000)
+
+    assert.deepEqual(await lock.isLocked(), false)
+
+    await lock.tryAcquire()
+
+    assert.deepEqual(await lock.isLocked(), true)
+    assert.deepEqual(lock.getRemainingTime(), 1000)
+    assert.deepEqual(lock.isExpired(), false)
+  })
+
+  test('tryAcquires throws timeout error when lock is not available', async ({ assert }) => {
+    class FakeStore extends NullStore {
+      async save(_key: string) {
+        return false
+      }
+    }
+
+    const lock = new Lock('foo', new FakeStore(), defaultOptions)
+
+    // @ts-ignore
+    await assert.rejects(() => lock.tryAcquire(), E_LOCK_ALREADY_ACQUIRED.message)
   })
 })

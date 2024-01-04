@@ -1,8 +1,8 @@
 import { setTimeout } from 'node:timers/promises'
 import { InvalidArgumentsException } from '@poppinss/utils'
 
-import { E_LOCK_TIMEOUT } from './errors.js'
 import { resolveDuration } from './helpers.js'
+import { E_LOCK_ALREADY_ACQUIRED, E_LOCK_TIMEOUT } from './errors.js'
 import type {
   Duration,
   LockAcquireOptions,
@@ -103,6 +103,15 @@ export class Lock {
     }
 
     this.#config.logger.debug({ key: this.#key }, 'Lock acquired')
+  }
+
+  /**
+   * Try to acquire the lock immediately or throw an error
+   */
+  async tryAcquire() {
+    const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
+    if (!result) throw new E_LOCK_ALREADY_ACQUIRED()
+    this.#expirationTime = this.#ttl ? Date.now() + this.#ttl : null
   }
 
   /**
