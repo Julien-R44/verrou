@@ -43,7 +43,10 @@ test.group('Lock', () => {
       }
     }
 
-    const lock = new Lock('foo', new FakeStore(), { retry: { attempts: 5 }, logger: noopLogger() })
+    const lock = new Lock('foo', new FakeStore(), {
+      retry: { attempts: 5, delay: 10 },
+      logger: noopLogger(),
+    })
 
     // @ts-ignore
     await assert.rejects(() => lock.acquire(), E_LOCK_TIMEOUT.message)
@@ -59,15 +62,16 @@ test.group('Lock', () => {
 
     const start = Date.now()
     const lock = new Lock('foo', new FakeStore(), {
-      retry: { attempts: 5, delay: 100 },
+      retry: { attempts: 5, delay: 50 },
       logger: noopLogger(),
     })
 
     // @ts-ignore
     await assert.rejects(() => lock.acquire(), E_LOCK_TIMEOUT.message)
+
     const elapsed = Date.now() - start
-    assert.isAbove(elapsed, 400)
-    assert.isBelow(elapsed, 600)
+    assert.isAbove(elapsed, 199)
+    assert.isBelow(elapsed, 300)
   })
 
   test('respect timeout when acquiring', async ({ assert }) => {
