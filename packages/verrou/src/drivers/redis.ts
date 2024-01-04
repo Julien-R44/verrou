@@ -25,7 +25,21 @@ export class RedisStore implements LockStore {
   }
 
   /**
-   * Delete a lock
+   * Save the lock in the store if not already locked by another owner
+   */
+  async save(key: string, owner: string, ttl: number | null) {
+    if (ttl) {
+      const result = await this.#connection.set(key, owner, 'PX', ttl, 'NX')
+      return result === 'OK'
+    }
+
+    const result = await this.#connection.setnx(key, owner)
+    return result === 1
+  }
+
+  /**
+   * Delete the lock from the store if it is owned by the owner
+   * Otherwise throws a E_LOCK_NOT_OWNED error
    */
   async delete(key: string, owner: string) {
     const lua = `
@@ -41,14 +55,14 @@ export class RedisStore implements LockStore {
   }
 
   /**
-   * Force delete a lock
+   * Force delete the lock from the store. No check is made on the owner
    */
-  async forceRelease(key: string) {
+  async forceDelete(key: string) {
     await this.#connection.del(key)
   }
 
   /**
-   * Check if a lock exists
+   * Check if the lock exists
    */
   async exists(key: string): Promise<boolean> {
     const result = await this.#connection.get(key)
@@ -56,20 +70,8 @@ export class RedisStore implements LockStore {
   }
 
   /**
-   * Save a lock
-   */
-  async save(key: string, owner: string, ttl: number | null) {
-    if (ttl) {
-      const result = await this.#connection.set(key, owner, 'PX', ttl, 'NX')
-      return result === 'OK'
-    }
-
-    const result = await this.#connection.setnx(key, owner)
-    return result === 1
-  }
-
-  /**
-   * Extend a lock
+   * Extend the lock expiration. Throws an error if the lock is not owned by the owner
+   * Duration is in milliseconds
    */
   async extend(key: string, owner: string, duration: number) {
     const lua = `

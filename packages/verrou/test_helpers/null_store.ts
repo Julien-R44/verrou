@@ -13,7 +13,7 @@ export class NullStore implements LockStore {
     return true
   }
 
-  async forceRelease(_key: string): Promise<void> {
+  async forceDelete(_key: string): Promise<void> {
     return
   }
 

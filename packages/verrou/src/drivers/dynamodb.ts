@@ -66,7 +66,7 @@ export class DynamoDBStore implements LockStore {
   }
 
   /**
-   * Save a lock
+   * Save the lock in the store if not already locked by another owner
    */
   async save(key: string, owner: string, ttl: number | null) {
     await this.#initialized
@@ -96,7 +96,8 @@ export class DynamoDBStore implements LockStore {
   }
 
   /**
-   * Delete a lock
+   * Delete the lock from the store if it is owned by the owner
+   * Otherwise throws a E_LOCK_NOT_OWNED error
    */
   async delete(key: string, owner: string) {
     const command = new DeleteItemCommand({
@@ -115,9 +116,9 @@ export class DynamoDBStore implements LockStore {
   }
 
   /**
-   * Force delete a lock
+   * Force delete the lock from the store. No check is made on the owner
    */
-  async forceRelease(key: string) {
+  async forceDelete(key: string) {
     const command = new DeleteItemCommand({
       TableName: this.#tableName,
       Key: { key: { S: key } },
@@ -127,7 +128,7 @@ export class DynamoDBStore implements LockStore {
   }
 
   /**
-   * Check if a lock exists
+   * Check if the lock exists
    */
   async exists(key: string) {
     await this.#initialized
@@ -142,6 +143,10 @@ export class DynamoDBStore implements LockStore {
     return result.Item !== undefined && !isExpired
   }
 
+  /**
+   * Extend the lock expiration. Throws an error if the lock is not owned by the owner
+   * Duration is in milliseconds
+   */
   async extend(key: string, owner: string, duration: number) {
     const command = new PutItemCommand({
       TableName: this.#tableName,

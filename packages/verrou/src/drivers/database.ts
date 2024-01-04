@@ -33,7 +33,7 @@ export class DatabaseStore implements LockStore {
   }
 
   /**
-   * Create a Knex connection instance
+   * Create or reuse a Knex connection instance
    */
   #createConnection(config: DatabaseStoreOptions) {
     if (typeof config.connection === 'string') {
@@ -89,7 +89,7 @@ export class DatabaseStore implements LockStore {
   }
 
   /**
-   * Save a new lock
+   * Save the lock in the store if not already locked by another owner
    *
    * We basically rely on primary key constraint to ensure the lock is
    * unique.
@@ -117,7 +117,8 @@ export class DatabaseStore implements LockStore {
   }
 
   /**
-   * Delete a lock
+   * Delete the lock from the store if it is owned by the owner
+   * Otherwise throws a E_LOCK_NOT_OWNED error
    */
   async delete(key: string, owner: string): Promise<void> {
     const currentOwner = await this.#getCurrentOwner(key)
@@ -127,14 +128,15 @@ export class DatabaseStore implements LockStore {
   }
 
   /**
-   * Force delete a lock
+   * Force delete the lock from the store. No check is made on the owner
    */
-  async forceRelease(key: string) {
+  async forceDelete(key: string) {
     await this.#connection.table(this.#tableName).where('key', key).delete()
   }
 
   /**
-   * Extend a lock
+   * Extend the lock expiration. Throws an error if the lock is not owned by the owner
+   * Duration is in milliseconds
    */
   async extend(key: string, owner: string, duration: number) {
     const updated = await this.#connection
@@ -147,7 +149,7 @@ export class DatabaseStore implements LockStore {
   }
 
   /**
-   * Check if a lock exists
+   * Check if the lock exists
    */
   async exists(key: string) {
     await this.#initialized

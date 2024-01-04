@@ -83,7 +83,7 @@ export interface LockStore {
   /**
    * Force delete the lock from the store. No check is made on the owner
    */
-  forceRelease(key: string): Promise<void>
+  forceDelete(key: string): Promise<void>
 
   /**
    * Check if the lock exists

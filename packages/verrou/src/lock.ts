@@ -111,7 +111,7 @@ export class Lock {
    * Force release the lock
    */
   async forceRelease() {
-    await this.#lockStore.forceRelease(this.#key)
+    await this.#lockStore.forceDelete(this.#key)
   }
 
   /**
