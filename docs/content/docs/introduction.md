@@ -1,10 +1,10 @@
 ---
-summary: Verrou is a locking library for managing locks in a NodeJS application.
+summary: Verrou is a locking library for managing locks in a Node.js application.
 ---
 
 # Introduction
 
-Verrou is a locking library for managing locks ( mutexes ) in a NodeJS application.
+Verrou is a library for managing locks in a Node.js application.
 
 - 🔒 Easy usage
 - 🔄 Multiple drivers (Redis, Postgres, MySQL, Sqlite, In-Memory and others)

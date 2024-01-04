@@ -6,13 +6,12 @@
 
 ## Features
 
-- 🔐 Easy to use
-- 🗄️ Multiples drivers ( Redis, Postgres, MySQL, Sqlite, In-Memory and others )
-- 🚀 Modern API ( `using`, `async/await` )
-- 🗂️ Named locks
-- 🧪 Easily testable by switching to in-memory driver in test environment
-- 📖 Well documented + handy JSDoc annotations
-- 🧩 Easily extendable with your own driver
+- 🔒 Easy usage
+- 🔄 Multiple drivers (Redis, Postgres, MySQL, Sqlite, In-Memory and others)
+- 🔑 Customizable named locks
+- 🌐 Consistent API across all drivers
+- 🧪 Easy testing by switching to an in-memory driver
+- 🔨 Easily extensible with your own drivers
 
 See documentation at [verrou.dev](https://verrou.dev/docs/introduction)
 
