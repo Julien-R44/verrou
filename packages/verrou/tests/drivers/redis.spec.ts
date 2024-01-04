@@ -3,7 +3,7 @@ import { test } from '@japa/runner'
 
 import { RedisStore } from '../../src/drivers/redis.js'
 import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
-import { registerStoreTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerStoreTestSuite } from '../../src/test_suite.js'
 
 const ioredis = new Redis(REDIS_CREDENTIALS)
 

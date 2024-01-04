@@ -8,8 +8,9 @@
   "keywords": [],
   "exports": {
     ".": "./build/index.js",
+    "./types": "./build/src/types/main.js",
     "./drivers/*": "./build/src/drivers/*.js",
-    "./types": "./build/src/types/main.js"
+    "./test_suite": "./build/src/test_suite.js"
   },
   "scripts": {
     "clean": "del-cli build",
@@ -19,7 +20,6 @@
     "pretest": "pnpm lint",
     "test": "c8 pnpm quick:test",
     "build": "tsup-node",
-    "postbuild": "pnpm copy:templates",
     "release": "pnpm build && pnpm release-it",
     "version": "pnpm build",
     "prepublishOnly": "pnpm build",
@@ -56,8 +56,9 @@
   "tsup": {
     "entry": [
       "./index.ts",
+      "./src/drivers/*.ts",
       "./src/types/main.ts",
-      "./src/drivers/*.ts"
+      "./src/test_suite.ts"
     ],
     "outDir": "./build",
     "clean": true,

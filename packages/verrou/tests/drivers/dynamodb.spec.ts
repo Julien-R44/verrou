@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 import { DeleteTableCommand, DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb'
 
 import { DynamoDBStore } from '../../src/drivers/dynamodb.js'
-import { registerStoreTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerStoreTestSuite } from '../../src/test_suite.js'
 
 const credentials = {
   region: 'eu-west-3',

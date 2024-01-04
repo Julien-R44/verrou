@@ -76,7 +76,7 @@ const verrou = new Verrou({
 
 ### Implementation details
 
-Note that the Redis store does **not** use the redlock algorithm. It uses a simple `setnx` as described in the [Redis documentation](https://redis.io/commands/setnx/). We may introduce a redlock strategy in the future.
+Note that the Redis store does **not** use the redlock algorithm. It uses a simple `setnx` as described in the [Redis documentation](https://redis.io/commands/set/). We may introduce a redlock strategy in the future.
 
 ## Memory
 

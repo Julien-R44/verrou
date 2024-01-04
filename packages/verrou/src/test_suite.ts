@@ -1,9 +1,11 @@
+/// <reference types="@japa/assert" />
+
 import type { Group } from '@japa/runner/core'
 import type { test as JapaTest } from '@japa/runner'
 import { setTimeout as sleep } from 'node:timers/promises'
 
-import { LockFactory } from '../src/lock_factory.js'
-import type { LockStore } from '../src/types/main.js'
+import { LockFactory } from './lock_factory.js'
+import type { LockStore } from './types/main.js'
 import { E_LOCK_NOT_OWNED, E_LOCK_TIMEOUT } from '../index.js'
 
 export function registerStoreTestSuite<T extends { new (options: any): LockStore }>(options: {
