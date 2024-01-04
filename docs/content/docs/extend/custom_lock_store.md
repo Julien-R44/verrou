@@ -21,7 +21,7 @@ Feel free to take a lot at [the existing drivers](https://github.com/Julien-R44/
 Once you defined you driver, you can create a factory function that will be used by Verrou to create instances of your driver at runtime. The factory function must be something like this:
 
 ```ts
-import type { CreateDriverResult } from 'verrou/types'
+import type { CreateDriverResult } from '@verrou/core/types'
 
 export function myStore(config: MyStoreOptions): CreateDriverResult<MyStoreOptions> {
   return { config, factory: () => new MyDriver(config) }
@@ -31,7 +31,7 @@ export function myStore(config: MyStoreOptions): CreateDriverResult<MyStoreOptio
 Finally, you can use your driver when creating a new instance of Verrou:
 
 ```ts
-import { Verrou } from 'verrou'
+import { Verrou } from '@verrou/core'
 import { myStore } from './my_store.js'
 
 const verrou = new Verrou({
@@ -50,7 +50,7 @@ If you want to test your driver and its compliance, Verrou is shipped with a tes
 // title: tests/my_driver.spec.ts
 import { test } from '@japa/runner'
 import { MyDriver } from '../src/my_driver.js'
-import { registerStoreTestSuite } from 'verrou/test_suite'
+import { registerStoreTestSuite } from '@verrou/core/test_suite'
 
 test.group('My Store', (group) => {
   registerStoreTestSuite({
