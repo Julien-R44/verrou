@@ -25,7 +25,7 @@ export const E_LOCK_STORAGE_ERROR = createError<[{ message: string }]>(
 )
 
 /**
- * Thrown when the lock is already acquired by someone else
+ * Thrown when user tries to acquire a lock that is already acquired by someone else
  */
 export const E_LOCK_ALREADY_ACQUIRED = createError(
   'Lock is already acquired',

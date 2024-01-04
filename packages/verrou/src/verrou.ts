@@ -4,8 +4,8 @@ import { LockFactory } from './lock_factory.js'
 import type { Duration, SerializedLock, StoreFactory } from './types/main.js'
 
 /**
- * Verrou is the main class of the library. It is used to create locks
- * and to access the underlying stores.
+ * Verrou provides a lock management for multiple stores.
+ * It allows accessing and manipulating locks in different stores
  */
 export class Verrou<KnownStores extends Record<string, StoreFactory>> {
   /**
