@@ -29,10 +29,10 @@ export class Lock {
   ) {
     this.#key = key
     this.#config = config
+    this.#ttl = ttl ?? null
     this.#lockStore = lockStore
     this.#expirationTime = expirationTime ?? null
     this.#owner = owner ?? this.#generateOwner()
-    this.#ttl = ttl ?? null
   }
 
   /**
@@ -75,17 +75,30 @@ export class Lock {
     const start = Date.now()
     while (attemptsDone++ < attemptsMax) {
       const now = Date.now()
+
+      /**
+       * Try to acquire the lock
+       */
       const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
       if (result) {
         this.#expirationTime = this.#ttl ? now + this.#ttl : null
         break
       }
 
+      /**
+       * Check if we reached the maximum number of attempts
+       */
       if (attemptsDone === attemptsMax) throw new E_LOCK_TIMEOUT()
 
+      /**
+       * Or check if we reached the timeout
+       */
       const elapsed = Date.now() - start
       if (timeout && elapsed > timeout) throw new E_LOCK_TIMEOUT()
 
+      /**
+       * Otherwise wait for the delay and try again
+       */
       await setTimeout(delay)
     }
 
