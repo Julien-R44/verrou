@@ -19,7 +19,7 @@ Verrou is a locking library for managing locks ( mutexes ) in a NodeJS applicati
 :::codegroup
 
 ```ts
-// title: Basic example
+// title: Configuration
 import { Verrou } from '@verrou/core'
 import { redisStore } from '@verrou/core/drivers/redis'
 import { memoryStore } from '@verrou/core/drivers/memory'
@@ -31,10 +31,6 @@ const verrou = new Verrou({
     memory: { driver: memoryStore() }
   }
 })
-
-await verrou.createLock('my-resource').run(async () => {
-  await doSomething()
-}) // Lock is automatically released
 ```
 
 ```ts
@@ -54,6 +50,14 @@ try {
 }
 ```
 
+```ts
+// title: Automatic lock
+const lock = verrou.createLock('my-resource')
+
+await lock.run(async () => {
+  await doSomething()
+}) // Lock is automatically released
+```
 :::
 
 ## Why Verrou ? 
@@ -83,16 +87,27 @@ router.get('/transfer', () => {
 })
 ```
 
-Okay cool. It works when we are trying it locally. But imagine something. What if two users are calling the same endpoint at the same time ? What will happen ?
+Okay cool. It works when we are trying it locally. But imagine something. What if two users try to transfer money to the same account at the same time ? 
 
-1. User A's request reads the balance of Account X.
-2. Concurrently, User B's request also reads the balance of Account X.
-3. User A's request deducts the transfer amount from Account X and saves it.
-4. Almost simultaneously, User B's request does the same, but it was unaware of the change made by User A's request because it read the old balance.
+Let's consider the following scenario :
+- User A wants to transfer 100$ to Account C
+- User B also wants to transfer 100$ to Account C
+- Account C has a balance of 1000$
 
-As a result, Account X's balance end up totally incorrect. This is a classic example of what we call race condition. 
+What will happen if both request are almost simultaneously executed ?
 
-They are multiple ways to solve this problem. A simple one would be to use a lock. By adding a lock, we are preventing concurrent requests from accessing the same piece of code at the same time :
+1. User A's request reads the balance of Account C : **We get 1000$**
+2. Concurrently, User B's request also reads the balance of Account C: **We also get 1000$ since User A's request hasn't been fully executed yet**
+3. User A's request adds 100$ to Account C's balance : **Account C now has 1100$**
+4. Almost simultaneously, User B's request does the same. But remember, we stored the balance of Account C in a variable, and we added 100$ to it. So we also get **1100$ + 100$ = 1200$**.
+
+See the problem ? That means, Account C will end up with 1100$ instead of 1200$. And even worse, User A and User B have been debited 100$ each, but only 100$ has been credited to Account C.
+
+As a result, we lost 100$ somewhere. And that's not good. This is what we also call a **race condition**.
+
+---
+
+They are multiple ways to solve this problem. But let's use a lock here. By adding a lock, we are preventing concurrent requests from accessing the same piece of code at the same time :
 
 ```ts
 router.get('/transfer', () => {

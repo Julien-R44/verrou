@@ -8,29 +8,10 @@ Extending Verrou with your own cache driver is easy. What you need is a class th
 
 ```ts
 interface LockStore {
-  /**
-   * Save the lock in the store if not already locked
-   */
-  save(key: string, owner: string, ttl: number | null | undefined): Promise<boolean>
-
-  /**
-   * Delete the lock from the store
-   */
+  save(key: string, owner: string, ttl: number | undefined): Promise<boolean>
   delete(key: string, owner: string): Promise<void>
-
-  /**
-   * Check if the lock exists
-   */
   exists(key: string): Promise<boolean>
-
-  /**
-   * Extend the lock expiration
-   */
-  extend(key: string, duration: Duration): Promise<void>
-
-  /**
-   * Disconnect the store
-   */
+  extend(key: string, owner: string, duration: number): Promise<void>
   disconnect(): Promise<void>
 }
 ```
