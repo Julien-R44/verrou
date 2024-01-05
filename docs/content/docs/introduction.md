@@ -99,7 +99,7 @@ What will happen if both request are almost simultaneously executed ?
 1. User A's request reads the balance of Account C : **We get 1000$**
 2. Concurrently, User B's request also reads the balance of Account C: **We also get 1000$ since User A's request hasn't been fully executed yet**
 3. User A's request adds 100$ to Account C's balance : **Account C now has 1100$**
-4. Almost simultaneously, User B's request does the same. But remember, we stored the balance of Account C in a variable, and we added 100$ to it. So we also get **1100$ + 100$ = 1200$**.
+4. Almost simultaneously, User B's request does the same. But remember, we stored the balance of Account C in a variable, and we added 100$ to it. So we also get **1000$ + 100$ = 1100$**.
 
 See the problem ? That means, Account C will end up with 1100$ instead of 1200$. And even worse, User A and User B have been debited 100$ each, but only 100$ has been credited to Account C.
 
