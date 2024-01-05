@@ -57,6 +57,18 @@
     "access": "public",
     "tag": "latest"
   },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore(release): verrou@${version}",
+      "tagAnnotation": "release ${version}",
+      "tagName": "verrou@${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "verrou@${version}",
+      "web": true
+    }
+  },
   "tsup": {
     "entry": [
       "./index.ts",
