@@ -44,6 +44,8 @@ await verrou.createLock('my-resource').run(async () => {
 }) // Lock is automatically released
 ```
 
+Learn more at [verrou.dev](https://verrou.dev/docs/introduction)
+
 ## Sponsor 
 
 If you like this project, [please consider supporting it by sponsoring it](https://github.com/sponsors/Julien-R44/). It will help a lot to maintain and improve it. Thanks a lot !
