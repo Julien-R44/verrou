@@ -1,3 +1,5 @@
+![verrou_banner (1)](https://github.com/Julien-R44/verrou/assets/8337858/6f178db7-e37f-448f-911a-df4dbae3a292)
+
 <p align="center">
   <br/>
   <a href="https://verrou.dev/">Verrou 🔐</a> is a locking library for Node.js applications
