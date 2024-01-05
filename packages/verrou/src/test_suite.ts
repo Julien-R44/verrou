@@ -1,6 +1,6 @@
 /// <reference types="@japa/assert" />
 
-import type { Group } from '@japa/runner/core'
+import { type Group } from '@japa/runner/core'
 import type { test as JapaTest } from '@japa/runner'
 import { setTimeout as sleep } from 'node:timers/promises'
 
@@ -136,6 +136,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
     lock.run(async () => {
       await sleep(500)
       flag = true
+      console.log('runned')
     })
 
     assert.isFalse(flag)
@@ -154,17 +155,160 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
     const lock = provider.createLock('foo')
     let flag = false
 
-    lock
+    await lock
       .run(async () => {
         flag = true
         throw new Error('hello world')
       })
       .catch(() => undefined)
 
-    assert.isFalse(flag)
+    assert.isTrue(flag)
+    await lock.run(async () => undefined)
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
     await lock.run(async () => undefined)
     assert.isTrue(flag)
-  })
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
+    await lock.run(async () => undefined)
+    assert.isTrue(flag)
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
+    await lock.run(async () => undefined)
+    assert.isTrue(flag)
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
+    await lock.run(async () => undefined)
+    assert.isTrue(flag)
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
+    await lock.run(async () => undefined)
+    assert.isTrue(flag)
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
+    await lock.run(async () => undefined)
+    assert.isTrue(flag)
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
+    await lock.run(async () => undefined)
+    assert.isTrue(flag)
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
+    await lock.run(async () => undefined)
+    assert.isTrue(flag)
+  }).pin()
+
+  test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
+    const provider = new LockFactory(new store(config))
+    const lock = provider.createLock('foo')
+    let flag = false
+
+    await lock
+      .run(async () => {
+        flag = true
+        throw new Error('hello world')
+      })
+      .catch(() => undefined)
+
+    await lock.run(async () => undefined)
+    assert.isTrue(flag)
+  }).pin()
 
   test('multiple calls to release behave as expected', async ({ assert }) => {
     let v = 0
