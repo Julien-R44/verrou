@@ -1,3 +1,5 @@
+![banner](../../assets/banner.png)
+
 <p align="center">
   <br/>
   <a href="https://verrou.dev/">Verrou 🔐</a> is a locking library for Node.js applications
