@@ -20,6 +20,7 @@
     @if(file.frontmatter.summary)
       <meta name="og:description" content="{{ file.frontmatter.summary }}">
     @end
+    <meta property="og:image" content="{{ app.config.get('appUrl') }}/og_image.png">
 
     <meta property="twitter:url" content="{{ app.config.get('appUrl') }}">
     <meta property="twitter:title" content="{{ file.frontmatter.title }}">
