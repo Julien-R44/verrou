@@ -14,17 +14,17 @@ Verrou is an ESM-only package. You will also need Node.js 18 or higher.
 :::codegroup
 ```sh
 // title: npm
-npm i verrou
+npm i @verrou/core
 ```
 
 ```sh
 // title: pnpm
-pnpm add verrou
+pnpm add @verrou/core
 ```
 
 ```sh
 // title: yarn
-yarn add verrou
+yarn add @verrou/core
 ```
 :::
 
