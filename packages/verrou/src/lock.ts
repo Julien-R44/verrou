@@ -112,6 +112,8 @@ export class Lock {
     const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
     if (!result) throw new E_LOCK_ALREADY_ACQUIRED()
     this.#expirationTime = this.#ttl ? Date.now() + this.#ttl : null
+
+    this.#config.logger.debug({ key: this.#key }, 'Lock acquired with tryAcquire()')
   }
 
   /**
@@ -140,6 +142,7 @@ export class Lock {
    */
   async release() {
     await this.#lockStore.delete(this.#key, this.#owner)
+    this.#config.logger.debug({ key: this.#key }, 'Lock released')
   }
 
   /**
@@ -168,6 +171,8 @@ export class Lock {
     const now = Date.now()
     await this.#lockStore.extend(this.#key, this.#owner, resolvedTtl)
     this.#expirationTime = now + resolvedTtl
+
+    this.#config.logger.debug({ key: this.#key, newTtl: this.#expirationTime }, 'Lock extended')
   }
 
   /**
