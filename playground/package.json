@@ -2,6 +2,10 @@
   "name": "@verrou/playground",
   "type": "module",
   "dependencies": {
-    "@verrou/core": "workspace:*"
+    "@verrou/core": "workspace:*",
+    "pino": "^8.17.2"
+  },
+  "devDependencies": {
+    "pino-pretty": "^10.3.1"
   }
 }

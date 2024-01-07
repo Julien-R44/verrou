@@ -1,9 +1,15 @@
+import pino from 'pino'
 import { Verrou } from '@verrou/core'
 import { setTimeout } from 'node:timers/promises'
 import { redisStore } from '@verrou/core/drivers/redis'
 import { memoryStore } from '@verrou/core/drivers/memory'
 
+const logger = pino.default({ level: 'debug', transport: { target: 'pino-pretty' } })
+
+logger.info('Hello world')
+
 const verrou = new Verrou({
+  logger,
   default: 'redis',
   stores: {
     memory: {
