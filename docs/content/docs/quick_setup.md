@@ -44,7 +44,7 @@ import { memoryStore } from '@verrou/core/drivers/memory'
 
 const verrou = new Verrou({
   default: 'redis',
-  drivers: {
+  stores: {
     redis: { driver: redisStore() },
     memory: { driver: memoryStore() }
   }
