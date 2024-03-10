@@ -22,7 +22,7 @@ export type DatabaseStoreOptions = {
 
   /**
    * Set to true to automatically create the table if it doesn't exist
-   * 
+   *
    * @default true
    */
   autoCreateTable?: boolean
