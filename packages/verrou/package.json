@@ -30,6 +30,9 @@
     "ioredis": "^5.3.2"
   },
   "peerDependenciesMeta": {
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
     "ioredis": {
       "optional": true
     }
