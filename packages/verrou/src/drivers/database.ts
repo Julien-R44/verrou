@@ -29,7 +29,11 @@ export class DatabaseStore implements LockStore {
   constructor(config: DatabaseStoreOptions) {
     this.#connection = this.#createConnection(config)
     this.#tableName = config.tableName || this.#tableName
-    this.#initialized = this.#createTableIfNotExists()
+    if (config.autoCreateTable !== false) {
+      this.#initialized = this.#createTableIfNotExists()
+    } else {
+      this.#initialized = Promise.resolve()
+    }
   }
 
   /**

@@ -25,6 +25,13 @@ test.group('Database Driver', (group) => {
     assert.lengthOf(locks, 1)
   })
 
+  test('doesnt create table if autoCreateTable is false', async ({ assert }) => {
+    new DatabaseStore({ connection: db, dialect: 'pg', autoCreateTable: false })
+
+    const hasTable = await db.schema.hasTable('verrou')
+    assert.isFalse(hasTable)
+  })
+
   test('null ttl', async ({ assert }) => {
     const store = new DatabaseStore({ connection: db, dialect: 'pg' })
 

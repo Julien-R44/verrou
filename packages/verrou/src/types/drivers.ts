@@ -17,9 +17,15 @@ export type DatabaseStoreOptions = {
 
   /**
    * The table name to use ( to store the locks )
-   * Table will be automatically created if it doesn't exist
    */
   tableName?: string
+
+  /**
+   * Set to true to automatically create the table if it doesn't exist
+   * 
+   * @default true
+   */
+  autoCreateTable?: boolean
 }
 
 export type RedisStoreOptions = {
