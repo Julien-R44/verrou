@@ -12,7 +12,10 @@
 import 'reflect-metadata'
 
 import { Ignitor } from '@adonisjs/core'
+import { readFile } from 'node:fs/promises'
 import { defineConfig } from '@adonisjs/vite'
+import { ApplicationService } from '@adonisjs/core/types'
+import { defineConfig as defineHttpConfig } from '@adonisjs/core/http'
 
 /**
  * URL to the application root. AdonisJS need it to resolve
@@ -34,14 +37,27 @@ const IMPORTER = (filePath: string) => {
 /**
  * Defining routes for development server
  */
-async function defineRoutes() {
+async function defineRoutes(app: ApplicationService) {
   const { default: server } = await import('@adonisjs/core/services/server')
   const { collections } = await import('#src/collections')
   const { default: router } = await import('@adonisjs/core/services/router')
 
   server.use([() => import('@adonisjs/static/static_middleware')])
+  const redirects = await readFile(app.publicPath('_redirects'), 'utf-8')
+  const redirectsCollection = redirects.split('\n').reduce(
+    (result, line) => {
+      const [from, to] = line.split(' ')
+      result[from] = to
+      return result
+    },
+    {} as Record<string, string>
+  )
 
   router.get('*', async ({ request, response }) => {
+    if (redirectsCollection[request.url()]) {
+      return response.redirect(redirectsCollection[request.url()])
+    }
+
     for (const collection of collections) {
       await collection.refresh()
       const entry = collection.findByPermalink(request.url())
@@ -62,7 +78,7 @@ new Ignitor(APP_ROOT, { importer: IMPORTER })
         appUrl: process.env.APP_URL || '',
         app: {
           appKey: 'zKXHe-Ahdb7aPK1ylAJlRgTefktEaACi',
-          http: {},
+          http: defineHttpConfig({}),
         },
         static: {
           enabled: true,
