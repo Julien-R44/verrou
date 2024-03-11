@@ -1,9 +1,9 @@
 import knex from 'knex'
 import { test } from '@japa/runner'
 
-import { DatabaseStore } from '../../src/drivers/database.js'
-import { registerStoreTestSuite } from '../../src/test_suite.js'
-import { configureDatabaseGroupHooks } from '../../test_helpers/index.js'
+import { setupTeardownHooks } from './helpers.js'
+import { KnexStore } from '../../../src/drivers/knex.js'
+import { registerStoreTestSuite } from '../../../src/test_suite.js'
 
 const db = knex({
   client: 'sqlite3',
@@ -12,10 +12,10 @@ const db = knex({
 })
 
 test.group('Sqlite driver', (group) => {
-  configureDatabaseGroupHooks(db, group)
+  setupTeardownHooks(db, group)
   registerStoreTestSuite({
     test,
     config: { dialect: 'sqlite3', connection: db },
-    store: DatabaseStore,
+    store: KnexStore,
   })
 })

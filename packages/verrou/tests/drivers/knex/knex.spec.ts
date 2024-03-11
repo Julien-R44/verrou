@@ -1,15 +1,15 @@
 import knex from 'knex'
 import { test } from '@japa/runner'
 
-import { DatabaseStore } from '../../src/drivers/database.js'
-import { configureDatabaseGroupHooks } from '../../test_helpers/index.js'
+import { setupTeardownHooks } from './helpers.js'
+import { KnexStore } from '../../../src/drivers/knex.js'
 
 const db = knex({ client: 'pg', connection: { user: 'postgres', password: 'postgres' } })
 test.group('Database Driver', (group) => {
-  configureDatabaseGroupHooks(db, group)
+  setupTeardownHooks(db, group)
 
   test('create table with specified tableName', async ({ assert, cleanup }) => {
-    const store = new DatabaseStore({
+    const store = new KnexStore({
       connection: db,
       dialect: 'pg',
       tableName: 'verrou_my_locks',
@@ -26,14 +26,14 @@ test.group('Database Driver', (group) => {
   })
 
   test('doesnt create table if autoCreateTable is false', async ({ assert }) => {
-    new DatabaseStore({ connection: db, dialect: 'pg', autoCreateTable: false })
+    new KnexStore({ connection: db, dialect: 'pg', autoCreateTable: false })
 
     const hasTable = await db.schema.hasTable('verrou')
     assert.isFalse(hasTable)
   })
 
   test('null ttl', async ({ assert }) => {
-    const store = new DatabaseStore({ connection: db, dialect: 'pg' })
+    const store = new KnexStore({ connection: db, dialect: 'pg' })
 
     await store.save('foo', 'bar', null)
 

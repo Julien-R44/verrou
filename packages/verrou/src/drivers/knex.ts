@@ -1,16 +1,16 @@
-import knex, { type Knex } from 'knex'
+import type { Knex } from 'knex'
 
 import { E_LOCK_NOT_OWNED } from '../errors.js'
-import type { DatabaseStoreOptions, LockStore } from '../types/main.js'
+import type { KnexStoreOptions, LockStore } from '../types/main.js'
 
 /**
  * Create a new database store
  */
-export function databaseStore(config: DatabaseStoreOptions) {
-  return { config, factory: () => new DatabaseStore(config) }
+export function knexStore(config: KnexStoreOptions) {
+  return { config, factory: () => new KnexStore(config) }
 }
 
-export class DatabaseStore implements LockStore {
+export class KnexStore implements LockStore {
   /**
    * Knex connection instance
    */
@@ -26,8 +26,8 @@ export class DatabaseStore implements LockStore {
    */
   #initialized: Promise<void>
 
-  constructor(config: DatabaseStoreOptions) {
-    this.#connection = this.#createConnection(config)
+  constructor(config: KnexStoreOptions) {
+    this.#connection = config.connection
     this.#tableName = config.tableName || this.#tableName
     if (config.autoCreateTable !== false) {
       this.#initialized = this.#createTableIfNotExists()
@@ -37,27 +37,7 @@ export class DatabaseStore implements LockStore {
   }
 
   /**
-   * Create or reuse a Knex connection instance
-   */
-  #createConnection(config: DatabaseStoreOptions) {
-    if (typeof config.connection === 'string') {
-      return knex({ client: config.dialect, connection: config.connection, useNullAsDefault: true })
-    }
-
-    /**
-     * This looks hacky. Maybe we can find a better way to do this?
-     * We check if config.connection is a Knex object. If it is, we
-     * return it as is. If it's not, we create a new Knex object
-     */
-    if ('with' in config.connection!) {
-      return config.connection
-    }
-
-    return knex({ client: config.dialect, connection: config.connection, useNullAsDefault: true })
-  }
-
-  /**
-   * Create the cache table if it doesn't exist
+   * Create the locks table if it doesn't exist
    */
   async #createTableIfNotExists() {
     const hasTable = await this.#connection.schema.hasTable(this.#tableName)

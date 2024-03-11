@@ -1,22 +1,18 @@
-import { type Knex } from 'knex'
+import type { Knex } from 'knex'
+import type { Kysely } from 'kysely'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { RedisOptions as IoRedisOptions, Redis as IoRedis } from 'ioredis'
 
 export type DialectName = 'pg' | 'mysql2' | 'better-sqlite3' | 'sqlite3'
 
-export type DatabaseStoreOptions = {
-  /**
-   * The database dialect
-   */
-  dialect: DialectName
-
-  /**
-   * The database connection
-   */
-  connection: Knex | Knex.Config['connection']
-
+/**
+ * Common options for database stores
+ */
+export interface DatabaseOptions {
   /**
    * The table name to use ( to store the locks )
+   *
+   * @default 'verrou'
    */
   tableName?: string
 
@@ -28,6 +24,34 @@ export type DatabaseStoreOptions = {
   autoCreateTable?: boolean
 }
 
+/**
+ * Options for the Knex store
+ */
+export interface KnexStoreOptions extends DatabaseOptions {
+  /**
+   * The database dialect
+   */
+  dialect: DialectName
+
+  /**
+   * The Knex instance
+   */
+  connection: Knex
+}
+
+/**
+ * Options for the Kysely store
+ */
+export interface KyselyOptions extends DatabaseOptions {
+  /**
+   * The Kysely instance
+   */
+  connection: Kysely<any>
+}
+
+/**
+ * Options for the Redis store
+ */
 export type RedisStoreOptions = {
   /**
    * The Redis connection
@@ -35,6 +59,9 @@ export type RedisStoreOptions = {
   connection: IoRedis | IoRedisOptions
 }
 
+/**
+ * Options for the DynamoDB store
+ */
 export type DynamoDbOptions = {
   /**
    * DynamoDB table name to use.
