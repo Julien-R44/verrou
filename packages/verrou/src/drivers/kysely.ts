@@ -4,15 +4,15 @@ import { E_LOCK_NOT_OWNED } from '../errors.js'
 import type { KyselyOptions, LockStore } from '../types/main.js'
 
 /**
- * Create a new knex store
+ * Create a new Kysely store
  */
-export function knexStore(config: KyselyOptions) {
+export function kyselyStore(config: KyselyOptions) {
   return { config, factory: () => new KyselyStore(config) }
 }
 
 export class KyselyStore implements LockStore {
   /**
-   * Knex connection instance
+   * Kysely connection instance
    */
   #connection: Kysely<any>
 
@@ -44,7 +44,7 @@ export class KyselyStore implements LockStore {
       .createTable(this.#tableName)
       .addColumn('key', 'varchar(255)', (col) => col.primaryKey().notNull())
       .addColumn('owner', 'varchar(255)', (col) => col.notNull())
-      .addColumn('expiration', 'bigint')
+      .addColumn('expiration', 'bigint', (col) => col.unsigned())
       .ifNotExists()
       .execute()
   }
