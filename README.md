@@ -10,7 +10,7 @@
 
 - 🔒 Easy usage
 - 🔄 Multiple drivers (Redis, Postgres, MySQL, Sqlite, In-Memory and others)
-- 📦 Multiple database adapters ( Knex, Kysely, Drizzle ...)
+- 📦 Multiple database adapters ( Knex, Kysely ...)
 - 🔑 Customizable named locks
 - 🌐 Consistent API across all drivers
 - 🧪 Easy testing by switching to an in-memory driver
