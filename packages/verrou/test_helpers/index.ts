@@ -1,6 +1,3 @@
-import type { Knex } from 'knex'
-import type { Group } from '@japa/runner/core'
-
 export const BASE_URL = new URL('./tmp/', import.meta.url)
 
 export const REDIS_CREDENTIALS = {
@@ -8,18 +5,14 @@ export const REDIS_CREDENTIALS = {
   port: Number(process.env.REDIS_PORT),
 }
 
-export function configureDatabaseGroupHooks(db: Knex, group: Group) {
-  group.each.teardown(async () => {
-    const exists = await db.schema.hasTable('verrou')
-    if (!exists) return
+export const MYSQL_CREDENTIALS = {
+  user: 'root',
+  password: 'root',
+  database: 'mysql',
+  port: 3306,
+}
 
-    await db.table('verrou').truncate()
-  })
-
-  group.teardown(async () => {
-    const exists = await db.schema.hasTable('verrou')
-    if (exists) await db.schema.dropTable('verrou')
-
-    await db.destroy()
-  })
+export const POSTGRES_CREDENTIALS = {
+  user: 'postgres',
+  password: 'postgres',
 }

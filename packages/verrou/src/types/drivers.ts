@@ -1,22 +1,16 @@
-import { type Knex } from 'knex'
-import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
-import type { RedisOptions as IoRedisOptions, Redis as IoRedis } from 'ioredis'
+import type { Knex } from 'knex'
+import type { Kysely } from 'kysely'
+import type { Redis as IoRedis } from 'ioredis'
+import type { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
-export type DialectName = 'pg' | 'mysql2' | 'better-sqlite3' | 'sqlite3'
-
-export type DatabaseStoreOptions = {
-  /**
-   * The database dialect
-   */
-  dialect: DialectName
-
-  /**
-   * The database connection
-   */
-  connection: Knex | Knex.Config['connection']
-
+/**
+ * Common options for database stores
+ */
+export interface DatabaseOptions {
   /**
    * The table name to use ( to store the locks )
+   *
+   * @default 'verrou'
    */
   tableName?: string
 
@@ -28,13 +22,39 @@ export type DatabaseStoreOptions = {
   autoCreateTable?: boolean
 }
 
+/**
+ * Options for the Knex store
+ */
+export interface KnexStoreOptions extends DatabaseOptions {
+  /**
+   * The Knex instance
+   */
+  connection: Knex
+}
+
+/**
+ * Options for the Kysely store
+ */
+export interface KyselyOptions extends DatabaseOptions {
+  /**
+   * The Kysely instance
+   */
+  connection: Kysely<any>
+}
+
+/**
+ * Options for the Redis store
+ */
 export type RedisStoreOptions = {
   /**
    * The Redis connection
    */
-  connection: IoRedis | IoRedisOptions
+  connection: IoRedis
 }
 
+/**
+ * Options for the DynamoDB store
+ */
 export type DynamoDbOptions = {
   /**
    * DynamoDB table name to use.
@@ -43,18 +63,53 @@ export type DynamoDbOptions = {
     name: string
   }
 
+  connection: DynamoDBClient
+}
+
+/**
+ * An adapter for the DatabaseStore
+ */
+export interface DatabaseAdapter {
   /**
-   * AWS credentials
+   * Set the table name to store the locks
    */
-  credentials?: DynamoDBClientConfig['credentials']
+  setTableName(tableName: string): void
 
   /**
-   * Region of your DynamoDB instance
+   * Create the table to store the locks if it doesn't exist
    */
-  region: DynamoDBClientConfig['region']
+  createTableIfNotExists(): Promise<void>
 
   /**
-   * Endpoint to your DynamoDB instance
+   * Insert the given lock in the store
    */
-  endpoint: DynamoDBClientConfig['endpoint']
+  insertLock(lock: { key: string; owner: string; expiration: number | null }): Promise<void>
+
+  /**
+   * Acquire the lock by updating the owner and expiration date.
+   *
+   * The adapter should check if expiration date is in the past
+   * and return the number of updated rows.
+   */
+  acquireLock(lock: { key: string; owner: string; expiration: number | null }): Promise<number>
+
+  /**
+   * Delete a lock from the store.
+   *
+   * If owner is provided, the lock should only be deleted if the owner matches.
+   */
+  deleteLock(key: string, owner?: string): Promise<void>
+
+  /**
+   * Extend the expiration date of the lock by the given
+   * duration ( Date.now() + duration ).
+   *
+   * The owner must match.
+   */
+  extendLock(key: string, owner: string, duration: number): Promise<number>
+
+  /**
+   * Returns the current owner and expiration date of the lock
+   */
+  getLock(key: string): Promise<{ owner: string; expiration: number | null } | undefined>
 }

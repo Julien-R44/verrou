@@ -70,24 +70,4 @@ export class Verrou<KnownStores extends Record<string, StoreFactory>> {
   restoreLock(lock: SerializedLock) {
     return this.use(this.#defaultStoreName).restoreLock(lock)
   }
-
-  /**
-   * Disconnect the default store
-   */
-  async disconnect() {
-    await this.use(this.#defaultStoreName).disconnect()
-  }
-
-  /**
-   * Disconnect all connections to the stores
-   */
-  async disconnectAll() {
-    const promises = []
-
-    for (const store of this.#storesCache.values()) {
-      promises.push(store.disconnect())
-    }
-
-    await Promise.allSettled(promises)
-  }
 }

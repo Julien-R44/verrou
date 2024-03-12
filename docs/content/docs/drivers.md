@@ -22,16 +22,16 @@ The driver uses the [ioredis](https://github.com/redis/ioredis) library under th
 
 ```ts
 // title: Verrou API
+import { Redis } from 'ioredis'
 import { Verrou } from '@verrou/core'
 import { redisStore } from '@verrou/core/drivers/redis'
 
+const redis = new Redis({ host: 'localhost', port: 6379 })
 const verrou = new Verrou({
   default: 'redis',
   drivers: {
-    redis: { 
-      driver: redisStore({
-        connection: { host: 'localhost', port: 6379 }
-      })
+    redis: {
+      driver: redisStore({ connection: redis })
     },
   }
 })
@@ -42,37 +42,19 @@ const verrou = new Verrou({
 import { Verrou, LockFactory } from '@verrou/core'
 import { redisStore } from '@verrou/core/drivers/redis'
 
-const store = redisStore({
-  connection: { host: 'localhost', port: 6379 }
-})
+const redis = new Redis({ host: 'localhost', port: 6379 })
+const store = redisStore({ connection: redis })
 
 const lockFactory = new LockFactory(store)
 ```
 
 :::
 
-It is also possible to directly pass an Ioredis instance to reuse a connection.
-
-```ts
-import { Redis } from 'ioredis'
-import { Verrou } from '@verrou/core'
-import { redisStore } from '@verrou/core/drivers/redis'
-
-const ioredis = new Redis()
-
-const verrou = new Verrou({
-  default: 'redis',
-  drivers: {
-    redis: { driver: redisStore({ connection: ioredis }) },
-  }
-})
-```
-
 ### Options
 
 | Option | Description | Default |
 | --- | --- | --- |
-| `connection` | The connection options to use to connect to Redis or an instance of `ioredis` | N/A |
+| `connection` | An instance of `ioredis` | N/A |
 
 ### Implementation details
 
@@ -119,25 +101,18 @@ DynamoDB is also supported by Verrou. You will need to install `@aws-sdk/client-
 ```ts
 // title: Verrou API
 import { Verrou } from '@verrou/core'
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { dynamodbStore } from '@verrou/core/drivers/dynamodb'
 
+const dynamoClient = new DynamoDBClient(/* ... */)
 const verrou = new Verrou({
   default: 'dynamo',
   stores: {
     dynamo: {
       driver: dynamodbStore({
-        endpoint: '...',
-        region: 'eu-west-3',
-        table: {
-          // Name of the table where the locks will be stored
-          name: 'locks' 
-        },
-
-        // Credentials to use to connect to DynamoDB
-        credentials: {
-          accessKeyId: '...',
-          secretAccessKey: '...'
-        }
+        connection: dynamoClient,
+        // Name of the table where the locks will be stored
+        table: { name: 'locks' },
       })
     }
   }
@@ -147,21 +122,16 @@ const verrou = new Verrou({
 ```ts
 // title: LockFactory API
 import { Verrou, LockFactory } from '@verrou/core'
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { dynamodbStore } from '@verrou/core/drivers/dynamodb'
 
+const dynamoClient = new DynamoDBClient(/* ... */)
 const store = dynamodbStore({
-  endpoint: '...',
-  region: 'eu-west-3',
+  connection: dynamoClient,
+  // Name of the table where the locks will be stored
   table: {
-    // Name of the table where the locks will be stored
     name: 'locks' 
   },
-
-  // Credentials to use to connect to DynamoDB
-  credentials: {
-    accessKeyId: '...',
-    secretAccessKey: '...'
-  }
 })
 
 const lockFactory = new LockFactory(store)
@@ -176,192 +146,91 @@ The DynamoDB table will be automatically created if it does not exists. Otherwis
 | Option | Description | Default |
 | --- | --- | --- |
 | `table.name` | The name of the table that will be used to store the cache. | `cache` |
-| `credentials` | The credentials to use to connect to DynamoDB. | N/A |
-| `endpoint` | The endpoint to use to connect to DynamoDB. | N/A |
-| `region` | The region to use to connect to DynamoDB. | N/A |
+| `connection` | An instance of `DynamoDBClient` | N/A |
 
 ## Databases
 
-We offer several drivers to use a database as the locks store. Under the hood, we use [Knex](https://knexjs.org/). So all Knex options are available, feel free to check out the documentation.
+We offer several drivers to use a database as the locks store. The database store should use an adapter for your database. Out of the box, we support [Knex](https://knexjs.org/) and [Kysely](https://kysely.dev/) to interact with the database. Knex and Kysely support many databases : SQLite, MySQL, PostgreSQL, MSSQL, Oracle, and more.
 
-All SQL drivers accept the following options:
+:::note
+
+Note that you can easily create your own adapter by implementing the `DatabaseAdapter` interface if you are using another library not supported by Verrou. See the [documentation](/docs/advanced/custom-adapters) for more details.
+
+:::
+
+All Database drivers accept the following common options:
 
 | Option | Description | Default |
 | --- | --- | --- |
 | `tableName` | The name of the table that will be used to store the locks. | `verrou` |
 | `autoCreateTable` | If the table should be automatically created if it does not exist. | `true` |
-| `connection` | The connection options to use to connect to the database or an instance of `knex`. | N/A |
 
-### PostgreSQL
+### Knex
 
-You will need to install `pg` to use this driver.
-
-:::codegroup
-
-```ts
-// title: Verrou API
-import { Verrou } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
-
-const verrou = new Verrou({
-  default: 'pg',
-  stores: {
-    pg: {
-      driver: databaseStore({
-        dialect: 'pg',
-        connection: {
-          user: 'root',
-          password: 'root',
-          database: 'postgres',
-          port: 5432 
-        }
-      })
-    }
-  }
-})
-```
-
-```ts
-// title: LockFactory API
-import { Verrou, LockFactory } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
-
-const store = databaseStore({
-  dialect: 'pg',
-  connection: {
-    user: 'root',
-    password: 'root',
-    database: 'postgres',
-    port: 5432 
-  }
-})
-const lockFactory = new LockFactory(store)
-```
-
-:::
-
-### MySQL
-
-You will need to install `mysql2` to use this driver.
+You must provide a Knex instance to use the Knex driver. Feel free to check the [Knex documentation](https://knexjs.org/) for more details about the configuration. Knex support many databases : SQLite, MySQL, PostgreSQL, MSSQL, Oracle, and more.
 
 :::codegroup
 
 ```ts
 // title: Verrou API
+import knex from 'knex'
 import { Verrou } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
+import { knexStore } from '@verrou/core/drivers/knex'
 
-const verrou = new Verrou({
-  default: 'mysql',
-  stores: {
-    mysql: {
-      driver: databaseStore({
-        dialect: 'mysql',
-        connection: {
-          user: 'root', 
-          password: 'root', 
-          database: 'mysql', 
-          port: 3306
-        }
-      })
-    }
-  }
-})
-```
-
-```ts
-// title: LockFactory API
-import { Verrou, LockFactory } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
-
-const store = databaseStore({
-  dialect: 'mysql',
-  connection: {
-    user: 'root',
-    password: 'root',
-    database: 'mysql',
-    port: 3306
-  }
-})
-
-const lockFactory = new LockFactory(store)
-```
-
-:::
-
-### SQLite ( better-sqlite3 )
-
-You will need to install `better-sqlite3` to use this driver.
-
-:::codegroup
-
-```ts
-// title: Verrou API
-import { Verrou } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
+const db = knex({ client: 'mysql2', connection: MYSQL_CREDENTIALS })
 
 const verrou = new Verrou({
   default: 'sqlite',
   stores: {
-    sqlite: {
-      driver: databaseStore({
-        dialect: 'better-sqlite3',
-        connection: { filename: 'cache.sqlite3' }
-      })
-    }
+    sqlite: { driver: knexStore({ connection: db }) }
   }
 })
 ```
 
 ```ts
 // title: LockFactory API
+import knex from 'knex'
 import { Verrou, LockFactory } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
+import { knexStore } from '@verrou/core/drivers/knex'
 
-const store = databaseStore({
-  dialect: 'better-sqlite3',
-  connection: { filename: 'cache.sqlite3' }
-})
-
+const db = knex({ client: 'mysql2', connection: MYSQL_CREDENTIALS })
+const store = knexStore({ dialect: 'sqlite', connection: db })
 const lockFactory = new LockFactory(store)
 ```
 
 :::
 
+### Kysely
 
-### SQLite ( sqlite3 )
+You must provide a Kysely instance to use the Kysely driver. Feel free to check the [Kysely documentation](https://kysely.dev/) for more details about the configuration. Kysely support the following databases : SQLite, MySQL, PostgreSQL and MSSQL.
 
-You will need to install `sqlite3` to use this driver.
 
 :::codegroup
 
 ```ts
 // title: Verrou API
+import { Kysely } from 'kysely'
 import { Verrou } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
+import { kyselyStore } from '@verrou/core/drivers/kysely'
+
+const db = new Kysely<Database>({ dialect })
 
 const verrou = new Verrou({
-  default: 'sqlite',
+  default: 'kysely',
   stores: {
-    sqlite: {
-      driver: databaseStore({
-        connection: { filename: 'cache.sqlite3' }
-      })
-    }
+    kysely: { driver: kyselyStore({ connection: db }) }
   }
 })
 ```
 
 ```ts
 // title: LockFactory API
+import { Kysely } from 'kysely'
 import { Verrou, LockFactory } from '@verrou/core'
-import { databaseStore } from '@verrou/core/drivers/database'
+import { kyselyStore } from '@verrou/core/drivers/kysely'
 
-const store = databaseStore({
-  dialect: 'sqlite',
-  connection: { filename: 'cache.sqlite3' }
-})
-
+const db = new Kysely<Database>({ dialect })
+const store = kyselyStore({ connection: db })
 const lockFactory = new LockFactory(store)
 ```
 

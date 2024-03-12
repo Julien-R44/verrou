@@ -18,8 +18,7 @@ test.group('Redis Driver', (group) => {
 
   registerStoreTestSuite({
     test,
-    config: { connection: ioredis },
-    store: RedisStore,
+    createStore: () => new RedisStore({ connection: ioredis }),
   })
 
   test('null ttl', async ({ assert }) => {

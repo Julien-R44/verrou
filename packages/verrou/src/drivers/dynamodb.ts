@@ -1,8 +1,8 @@
+import type { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import {
   ConditionalCheckFailedException,
   CreateTableCommand,
   DeleteItemCommand,
-  DynamoDBClient,
   GetItemCommand,
   PutItemCommand,
   ResourceInUseException,
@@ -22,9 +22,9 @@ export class DynamoDBStore implements LockStore {
   #initialized: Promise<any>
 
   /**
-   * DynamoDB client
+   * DynamoDB connection
    */
-  #client: DynamoDBClient
+  #connection: DynamoDBClient
 
   /**
    * DynamoDB table name
@@ -33,12 +33,7 @@ export class DynamoDBStore implements LockStore {
 
   constructor(config: DynamoDbOptions) {
     this.#tableName = config.table.name
-
-    this.#client = new DynamoDBClient({
-      region: config.region,
-      credentials: config.credentials,
-      endpoint: config.endpoint,
-    })
+    this.#connection = config.connection
 
     this.#initialized = this.#createTableIfNotExists()
   }
@@ -58,7 +53,7 @@ export class DynamoDBStore implements LockStore {
     })
 
     try {
-      await this.#client.send(command)
+      await this.#connection.send(command)
     } catch (error) {
       if (error instanceof ResourceInUseException) return
       throw error
@@ -87,7 +82,7 @@ export class DynamoDBStore implements LockStore {
         ExpressionAttributeValues: { ':now': { N: Date.now().toString() } },
       })
 
-      const result = await this.#client.send(command)
+      const result = await this.#connection.send(command)
       return result.$metadata.httpStatusCode === 200
     } catch (err) {
       if (err instanceof ConditionalCheckFailedException) return false
@@ -109,7 +104,7 @@ export class DynamoDBStore implements LockStore {
     })
 
     try {
-      await this.#client.send(command)
+      await this.#connection.send(command)
     } catch (err) {
       throw new E_LOCK_NOT_OWNED()
     }
@@ -124,7 +119,7 @@ export class DynamoDBStore implements LockStore {
       Key: { key: { S: key } },
     })
 
-    await this.#client.send(command)
+    await this.#connection.send(command)
   }
 
   /**
@@ -137,7 +132,7 @@ export class DynamoDBStore implements LockStore {
       Key: { key: { S: key } },
     })
 
-    const result = await this.#client.send(command)
+    const result = await this.#connection.send(command)
     const isExpired = result.Item?.expires_at?.N && result.Item.expires_at.N < Date.now().toString()
 
     return result.Item !== undefined && !isExpired
@@ -161,16 +156,9 @@ export class DynamoDBStore implements LockStore {
     })
 
     try {
-      await this.#client.send(command)
+      await this.#connection.send(command)
     } catch (err) {
       throw new E_LOCK_NOT_OWNED()
     }
-  }
-
-  /**
-   * Disconnect from DynamoDB
-   */
-  async disconnect() {
-    this.#client.destroy()
   }
 }

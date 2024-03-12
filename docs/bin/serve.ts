@@ -14,7 +14,7 @@ import 'reflect-metadata'
 import { Ignitor } from '@adonisjs/core'
 import { readFile } from 'node:fs/promises'
 import { defineConfig } from '@adonisjs/vite'
-import { ApplicationService } from '@adonisjs/core/types'
+import type { ApplicationService } from '@adonisjs/core/types'
 import { defineConfig as defineHttpConfig } from '@adonisjs/core/http'
 
 /**
@@ -50,7 +50,7 @@ async function defineRoutes(app: ApplicationService) {
       result[from] = to
       return result
     },
-    {} as Record<string, string>
+    {} as Record<string, string>,
   )
 
   router.get('*', async ({ request, response }) => {

@@ -1,4 +1,5 @@
 import pino from 'pino'
+import { Redis } from 'ioredis'
 import { Verrou } from '@verrou/core'
 import { setTimeout } from 'node:timers/promises'
 import { redisStore } from '@verrou/core/drivers/redis'
@@ -8,18 +9,13 @@ const logger = pino.default({ level: 'debug', transport: { target: 'pino-pretty'
 
 logger.info('Hello world')
 
+const ioredis = new Redis({ host: 'localhost', port: 6379 })
 const verrou = new Verrou({
   logger,
   default: 'redis',
   stores: {
-    memory: {
-      driver: memoryStore(),
-    },
-    redis: {
-      driver: redisStore({
-        connection: { host: 'localhost', port: 6379 },
-      }),
-    },
+    memory: { driver: memoryStore() },
+    redis: { driver: redisStore({ connection: ioredis }) },
   },
 })
 
@@ -70,4 +66,4 @@ await Promise.all([
   purchaseProduct('123', 1, 'CustomerB'),
 ])
 
-await verrou.disconnectAll()
+await ioredis.quit()

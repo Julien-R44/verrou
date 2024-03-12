@@ -8,16 +8,15 @@ import { LockFactory } from './lock_factory.js'
 import type { LockStore } from './types/main.js'
 import { E_LOCK_NOT_OWNED, E_LOCK_TIMEOUT } from '../index.js'
 
-export function registerStoreTestSuite<T extends { new (options: any): LockStore }>(options: {
+export function registerStoreTestSuite(options: {
   test: typeof JapaTest
-  store: T
-  config: ConstructorParameters<T>[0]
+  createStore: () => LockStore
   configureGroup?: (group: Group) => any
 }) {
-  const { test, store, config } = options
+  const { test } = options
 
   test('acquiring lock is exclusive', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     await lock.acquire()
@@ -36,14 +35,14 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('new mutex is not locked', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     assert.isFalse(await lock.isLocked())
   })
 
   test('acquiring lock makes it locked', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     await lock.acquire()
@@ -52,7 +51,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('creating same lock twice returns same lock', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock1 = provider.createLock('foo1')
     const lock2 = provider.createLock('foo1')
 
@@ -64,7 +63,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('cant release a lock that is not acquired by you', async () => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
     const lock2 = provider.createLock('foo')
 
@@ -75,7 +74,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   }).throws(E_LOCK_NOT_OWNED.message, E_LOCK_NOT_OWNED)
 
   test('throws timeout error when lock is not acquired in time', async () => {
-    const provider = new LockFactory(new store(config), {
+    const provider = new LockFactory(options.createStore(), {
       retry: { timeout: 500 },
     })
     const lock = provider.createLock('foo')
@@ -87,7 +86,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   }).throws(E_LOCK_TIMEOUT.message, E_LOCK_TIMEOUT)
 
   test('run passes result', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     const result = await lock.run(async () => 'hello world')
@@ -96,7 +95,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('run passes result from a promise', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     const result = await lock.run(async () => Promise.resolve('hello world'))
@@ -105,7 +104,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('run passes rejection', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     await assert.rejects(
@@ -118,7 +117,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('run passes exceptions', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     await assert.rejects(async () => {
@@ -129,7 +128,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('run is exclusive', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     let flag = false
@@ -150,7 +149,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
     let flag = false
 
@@ -167,7 +166,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
 
   test('multiple calls to release behave as expected', async ({ assert }) => {
     let v = 0
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     const run = async () => {
@@ -181,14 +180,14 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('get lock owner', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
     assert.isString(lock.getOwner())
   })
 
   test('restore lock from another instance', async ({ assert }) => {
-    const storeInstance = new store(config)
+    const storeInstance = options.createStore()
     const provider = new LockFactory(storeInstance)
     const lock = provider.createLock('foo')
 
@@ -204,7 +203,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('exists returns false if lock is expired', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo', 1000)
 
     await lock.acquire()
@@ -217,7 +216,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('should be able to acquire lock after it expires', async ({ assert }) => {
-    const storeInstance = new store(config)
+    const storeInstance = options.createStore()
     const provider = new LockFactory(storeInstance, { retry: { delay: 25 } })
     const lock1 = provider.createLock('foo', 1000)
     const lock2 = provider.createLock('foo', 1000)
@@ -234,7 +233,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   test('should be able to acquire lock with another instance after it expires', async ({
     assert,
   }) => {
-    const storeInstance = new store(config)
+    const storeInstance = options.createStore()
     const provider = new LockFactory(storeInstance)
     const lock1 = provider.createLock('foo', 1000)
     const lock2 = provider.createLock('foo', 1000)
@@ -247,7 +246,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('custom ttl should be used', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo', 400)
 
     await lock.acquire()
@@ -260,7 +259,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('able to acquire a lock that is expired', async ({ assert }) => {
-    const provider = new LockFactory(new store(config), {
+    const provider = new LockFactory(options.createStore(), {
       retry: {
         attempts: 1,
       },
@@ -283,7 +282,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('null ttl so that lock never expires', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo', null)
 
     await lock.acquire()
@@ -296,7 +295,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('forceRelease allows to release a lock that is not acquired by you', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
     const lock2 = provider.createLock('foo')
 
@@ -308,7 +307,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('extend extends the lock ttl', async ({ assert }) => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo', 1000)
 
     await lock.acquire()
@@ -330,7 +329,7 @@ export function registerStoreTestSuite<T extends { new (options: any): LockStore
   })
 
   test('extend throws if lock is not acquired', async () => {
-    const provider = new LockFactory(new store(config))
+    const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo', 1000)
 
     await lock.extend()

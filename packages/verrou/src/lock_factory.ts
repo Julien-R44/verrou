@@ -60,11 +60,4 @@ export class LockFactory {
   restoreLock(lock: SerializedLock) {
     return new Lock(lock.key, this.#store, this.#config, lock.owner, lock.ttl, lock.expirationTime)
   }
-
-  /**
-   * Disconnect the store ( if applicable )
-   */
-  disconnect() {
-    return this.#store.disconnect()
-  }
 }

@@ -156,14 +156,6 @@ const lock1 = verrou.createLock('key', 'owner')
 const lock2 = verrou.restoreLock(lock1.serialize())
 ```
 
-### `disconnect`
-
-Disconnect from the store if applicable. With a Redis Store, it will close the `ioredis` connection.
-
-```ts
-await verrou.disconnect()
-```
-
 ## Verrou API
 
 Verrou API is a wrapper around the LockFactory API. 
@@ -198,13 +190,5 @@ As explained above, the `use` method allows you to use a different store than th
 
 ```ts
 verrou.use('myMemoryStore').createLock('key')
-```
-
-### `disconnectAll`
-
-Disconnect from all stores.
-
-```ts
-await verrou.disconnectAll()
 ```
 
