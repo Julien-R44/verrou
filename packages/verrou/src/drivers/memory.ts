@@ -109,8 +109,4 @@ export class MemoryStore implements LockStore {
 
     return lock.mutex.isLocked()
   }
-
-  async disconnect() {
-    // noop
-  }
 }

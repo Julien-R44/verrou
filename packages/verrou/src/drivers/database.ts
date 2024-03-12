@@ -105,6 +105,4 @@ export class DatabaseStore {
 
     return lock.expiration > Date.now()
   }
-
-  async disconnect() {}
 }

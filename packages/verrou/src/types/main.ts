@@ -110,9 +110,4 @@ export interface LockStore {
    * Duration is in milliseconds
    */
   extend(key: string, owner: string, duration: number): Promise<void>
-
-  /**
-   * Disconnect the store from the underlying storage ( when applicable )
-   */
-  disconnect(): Promise<void>
 }

@@ -85,11 +85,4 @@ export class RedisStore implements LockStore {
     const result = await this.#connection.eval(lua, 1, key, owner, duration)
     if (result === 0) throw new E_LOCK_NOT_OWNED()
   }
-
-  /**
-   * Disconnect from Redis
-   */
-  async disconnect() {
-    await this.#connection.quit()
-  }
 }

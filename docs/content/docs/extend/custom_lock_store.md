@@ -12,7 +12,6 @@ interface LockStore {
   delete(key: string, owner: string): Promise<void>
   exists(key: string): Promise<boolean>
   extend(key: string, owner: string, duration: number): Promise<void>
-  disconnect(): Promise<void>
 }
 ```
 

@@ -24,8 +24,4 @@ export class NullStore implements LockStore {
   async extend(_key: string, _owner: string, _duration: number): Promise<void> {
     return
   }
-
-  async disconnect() {
-    return
-  }
 }

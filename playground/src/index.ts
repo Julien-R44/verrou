@@ -69,5 +69,3 @@ await Promise.all([
   purchaseProduct('123', 1, 'CustomerA'),
   purchaseProduct('123', 1, 'CustomerB'),
 ])
-
-await verrou.disconnectAll()

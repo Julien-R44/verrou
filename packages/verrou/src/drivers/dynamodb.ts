@@ -166,11 +166,4 @@ export class DynamoDBStore implements LockStore {
       throw new E_LOCK_NOT_OWNED()
     }
   }
-
-  /**
-   * Disconnect from DynamoDB
-   */
-  async disconnect() {
-    this.#client.destroy()
-  }
 }
