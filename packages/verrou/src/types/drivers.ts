@@ -1,7 +1,7 @@
 import type { Knex } from 'knex'
 import type { Kysely } from 'kysely'
-import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
-import type { RedisOptions as IoRedisOptions, Redis as IoRedis } from 'ioredis'
+import type { Redis as IoRedis } from 'ioredis'
+import type { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
 /**
  * Common options for database stores
@@ -49,7 +49,7 @@ export type RedisStoreOptions = {
   /**
    * The Redis connection
    */
-  connection: IoRedis | IoRedisOptions
+  connection: IoRedis
 }
 
 /**
@@ -63,20 +63,7 @@ export type DynamoDbOptions = {
     name: string
   }
 
-  /**
-   * AWS credentials
-   */
-  credentials?: DynamoDBClientConfig['credentials']
-
-  /**
-   * Region of your DynamoDB instance
-   */
-  region: DynamoDBClientConfig['region']
-
-  /**
-   * Endpoint to your DynamoDB instance
-   */
-  endpoint: DynamoDBClientConfig['endpoint']
+  connection: DynamoDBClient
 }
 
 /**

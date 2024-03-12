@@ -4,13 +4,13 @@ import { DeleteTableCommand, DynamoDBClient, GetItemCommand } from '@aws-sdk/cli
 import { DynamoDBStore } from '../../src/drivers/dynamodb.js'
 import { registerStoreTestSuite } from '../../src/test_suite.js'
 
-const credentials = {
+const dynamoClient = new DynamoDBClient({
   region: 'eu-west-3',
   endpoint: process.env.DYNAMODB_ENDPOINT,
   credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
-}
-const config = { ...credentials, table: { name: 'verrou' } }
-const dynamoClient = new DynamoDBClient(credentials)
+})
+
+const config = { connection: dynamoClient, table: { name: 'verrou' } }
 
 function deleteTableTeardown(tableName: string) {
   return async () => {
@@ -22,7 +22,10 @@ function deleteTableTeardown(tableName: string) {
 test.group('DynamoDB Store', (group) => {
   group.each.teardown(deleteTableTeardown('verrou'))
 
-  registerStoreTestSuite({ test, createStore: () => new DynamoDBStore(config) })
+  registerStoreTestSuite({
+    test,
+    createStore: () => new DynamoDBStore(config),
+  })
 
   test('should automatically create table', async ({ assert }) => {
     const store = new DynamoDBStore(config)
