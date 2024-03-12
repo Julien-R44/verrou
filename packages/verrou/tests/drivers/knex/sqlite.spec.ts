@@ -14,6 +14,6 @@ test.group('Sqlite driver', (group) => {
   setupTeardownHooks(db, group)
   registerStoreTestSuite({
     test,
-    createStore: () => createKnexStore({ connection: db, dialect: 'sqlite3' }),
+    createStore: () => createKnexStore({ connection: db }),
   })
 })

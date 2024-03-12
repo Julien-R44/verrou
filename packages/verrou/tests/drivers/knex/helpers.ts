@@ -2,8 +2,8 @@ import type { Knex } from 'knex'
 import type { Group } from '@japa/runner/core'
 
 import { KnexAdapter } from '../../../src/drivers/knex.js'
-import type { KnexStoreOptions } from '../../../src/types/drivers.js'
 import { DatabaseStore } from '../../../src/drivers/database.js'
+import type { KnexStoreOptions } from '../../../src/types/drivers.js'
 
 export function setupTeardownHooks(db: Knex, group: Group) {
   group.each.teardown(async () => {

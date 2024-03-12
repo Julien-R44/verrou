@@ -1,9 +1,9 @@
 import { sql, type Kysely } from 'kysely'
 import type { Group } from '@japa/runner/core'
 
-import type { KyselyOptions } from '../../../src/types/drivers.js'
 import { KyselyAdapter } from '../../../src/drivers/kysely.js'
 import { DatabaseStore } from '../../../src/drivers/database.js'
+import type { KyselyOptions } from '../../../src/types/drivers.js'
 
 export function setupTeardownHooks(group: Group, db: Kysely<any>) {
   group.each.teardown(async () => {
