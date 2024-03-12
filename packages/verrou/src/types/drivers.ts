@@ -3,8 +3,6 @@ import type { Kysely } from 'kysely'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { RedisOptions as IoRedisOptions, Redis as IoRedis } from 'ioredis'
 
-export type DialectName = 'pg' | 'mysql2' | 'better-sqlite3' | 'sqlite3'
-
 /**
  * Common options for database stores
  */
@@ -28,11 +26,6 @@ export interface DatabaseOptions {
  * Options for the Knex store
  */
 export interface KnexStoreOptions extends DatabaseOptions {
-  /**
-   * The database dialect
-   */
-  dialect: DialectName
-
   /**
    * The Knex instance
    */
@@ -84,4 +77,52 @@ export type DynamoDbOptions = {
    * Endpoint to your DynamoDB instance
    */
   endpoint: DynamoDBClientConfig['endpoint']
+}
+
+/**
+ * An adapter for the DatabaseStore
+ */
+export interface DatabaseAdapter {
+  /**
+   * Set the table name to store the locks
+   */
+  setTableName(tableName: string): void
+
+  /**
+   * Create the table to store the locks if it doesn't exist
+   */
+  createTableIfNotExists(): Promise<void>
+
+  /**
+   * Insert the given lock in the store
+   */
+  insertLock(lock: { key: string; owner: string; expiration: number | null }): Promise<void>
+
+  /**
+   * Acquire the lock by updating the owner and expiration date.
+   *
+   * The adapter should check if expiration date is in the past
+   * and return the number of updated rows.
+   */
+  acquireLock(lock: { key: string; owner: string; expiration: number | null }): Promise<number>
+
+  /**
+   * Delete a lock from the store.
+   *
+   * If owner is provided, the lock should only be deleted if the owner matches.
+   */
+  deleteLock(key: string, owner?: string): Promise<void>
+
+  /**
+   * Extend the expiration date of the lock by the given
+   * duration ( Date.now() + duration ).
+   *
+   * The owner must match.
+   */
+  extendLock(key: string, owner: string, duration: number): Promise<number>
+
+  /**
+   * Returns the current owner and expiration date of the lock
+   */
+  getLock(key: string): Promise<{ owner: string; expiration: number | null } | undefined>
 }

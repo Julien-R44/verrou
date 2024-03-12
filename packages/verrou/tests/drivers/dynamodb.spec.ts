@@ -22,7 +22,7 @@ function deleteTableTeardown(tableName: string) {
 test.group('DynamoDB Store', (group) => {
   group.each.teardown(deleteTableTeardown('verrou'))
 
-  registerStoreTestSuite({ test, config, store: DynamoDBStore })
+  registerStoreTestSuite({ test, createStore: () => new DynamoDBStore(config) })
 
   test('should automatically create table', async ({ assert }) => {
     const store = new DynamoDBStore(config)

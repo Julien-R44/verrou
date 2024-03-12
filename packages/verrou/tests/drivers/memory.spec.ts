@@ -6,7 +6,6 @@ import { registerStoreTestSuite } from '../../src/test_suite.js'
 test.group('Memory Store', () => {
   registerStoreTestSuite({
     test,
-    config: undefined,
-    store: MemoryStore,
+    createStore: () => new MemoryStore(),
   })
 })
