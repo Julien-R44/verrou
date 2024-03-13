@@ -151,9 +151,10 @@ await lock.forceRelease()
 Create a lock.
 
 ```ts
-const lock = verrou.createLock('key')
-const lock = verrou.createLock('key', '5m')
-const lock = verrou.createLock('key', 30_000)
+const lockFactory = new LockFactory(redisStore())
+const lock1 = lockFactory.createLock('key')
+const lock2 = lockFactory.createLock('key', '5m')
+const lock3 = lockFactory.createLock('key', 30_000)
 ```
 
 First argument is the lock key. Second argument is optional and is the lock expiration time. By default, the lock expiration time is `30s`.
@@ -163,8 +164,9 @@ First argument is the lock key. Second argument is optional and is the lock expi
 Restore a lock. Useful when sharing a lock between multiple processes. See [Sharing a lock between multiple processes](./usage.md#sharing-a-lock-between-multiple-processes) for more details.
 
 ```ts
-const lock1 = verrou.createLock('key', 'owner')
-const lock2 = verrou.restoreLock(lock1.serialize())
+const lockFactory = new LockFactory(redisStore())
+const lock1 = lockFactory.createLock('key', 'owner')
+const lock2 = lockFactory.restoreLock(lock1.serialize())
 ```
 
 ## Verrou API
