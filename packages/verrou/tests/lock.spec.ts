@@ -335,20 +335,20 @@ test.group('Lock', () => {
     assert.isAbove(elapsed, 500)
   })
 
-  test('tryAcquire works', async ({ assert }) => {
+  test('acquireImmediately works', async ({ assert }) => {
     const store = new MemoryStore()
     const lock = new Lock('foo', store, defaultOptions, undefined, 1000)
 
     assert.deepEqual(await lock.isLocked(), false)
 
-    await lock.tryAcquire()
+    await lock.acquireImmediately()
 
     assert.deepEqual(await lock.isLocked(), true)
     assert.deepEqual(lock.getRemainingTime(), 1000)
     assert.deepEqual(lock.isExpired(), false)
   })
 
-  test('tryAcquires throws timeout error when lock is not available', async ({ assert }) => {
+  test('acquireImmediately throws timeout error when lock is not available', async ({ assert }) => {
     class FakeStore extends NullStore {
       async save(_key: string) {
         return false
@@ -358,6 +358,32 @@ test.group('Lock', () => {
     const lock = new Lock('foo', new FakeStore(), defaultOptions)
 
     // @ts-ignore
-    await assert.rejects(() => lock.tryAcquire(), E_LOCK_ALREADY_ACQUIRED.message)
+    await assert.rejects(() => lock.acquireImmediately(), E_LOCK_ALREADY_ACQUIRED.message)
+  })
+
+  test('runImmediately should acquire and release lock', async ({ assert }) => {
+    assert.plan(3)
+
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, defaultOptions)
+
+    assert.deepEqual(await lock.isLocked(), false)
+
+    await lock.runImmediately(async () => {
+      assert.deepEqual(await lock.isLocked(), true)
+    })
+
+    assert.deepEqual(await lock.isLocked(), false)
+  })
+
+  test('runImmediately throws if lock is not available', async ({ assert }) => {
+    const store = new MemoryStore()
+    const lock = new Lock('foo', store, defaultOptions)
+    const lock2 = new Lock('foo', store, defaultOptions)
+
+    await lock2.acquire()
+
+    // @ts-expect-error
+    await assert.rejects(() => lock.acquireImmediately(), E_LOCK_ALREADY_ACQUIRED.message)
   })
 })

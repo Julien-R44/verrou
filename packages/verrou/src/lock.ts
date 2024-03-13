@@ -108,12 +108,12 @@ export class Lock {
   /**
    * Try to acquire the lock immediately or throw an error
    */
-  async tryAcquire() {
+  async acquireImmediately() {
     const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
     if (!result) throw new E_LOCK_ALREADY_ACQUIRED()
     this.#expirationTime = this.#ttl ? Date.now() + this.#ttl : null
 
-    this.#config.logger.debug({ key: this.#key }, 'Lock acquired with tryAcquire()')
+    this.#config.logger.debug({ key: this.#key }, 'Lock acquired with acquireImmediately()')
   }
 
   /**
@@ -124,6 +124,19 @@ export class Lock {
   async run<T>(callback: () => Promise<T>): Promise<T> {
     try {
       await this.acquire()
+      return await callback()
+    } finally {
+      await this.release()
+    }
+  }
+
+  /**
+   * Same as `run` but try to acquire the lock immediately
+   * Or throw an error if the lock is already acquired
+   */
+  async runImmediately<T>(callback: () => Promise<T>): Promise<T> {
+    try {
+      await this.acquireImmediately()
       return await callback()
     } finally {
       await this.release()
