@@ -8,6 +8,7 @@ Verrou is a library for managing locks in a Node.js application.
 
 - 🔒 Easy usage
 - 🔄 Multiple drivers (Redis, Postgres, MySQL, Sqlite, In-Memory and others)
+- 📦 Multiple database adapters ( Knex, Kysely... )
 - 🔑 Customizable named locks
 - 🌐 Consistent API across all drivers
 - 🧪 Easy testing by switching to an in-memory driver
