@@ -2,7 +2,6 @@ import { setTimeout } from 'node:timers/promises'
 import { InvalidArgumentsException } from '@poppinss/utils'
 
 import { resolveDuration } from './helpers.js'
-import { E_LOCK_ALREADY_ACQUIRED, E_LOCK_TIMEOUT } from './errors.js'
 import type {
   Duration,
   LockAcquireOptions,
@@ -88,13 +87,13 @@ export class Lock {
       /**
        * Check if we reached the maximum number of attempts
        */
-      if (attemptsDone === attemptsMax) throw new E_LOCK_TIMEOUT()
+      if (attemptsDone === attemptsMax) return false
 
       /**
        * Or check if we reached the timeout
        */
       const elapsed = Date.now() - start
-      if (timeout && elapsed > timeout) throw new E_LOCK_TIMEOUT()
+      if (timeout && elapsed > timeout) return false
 
       /**
        * Otherwise wait for the delay and try again
@@ -103,6 +102,7 @@ export class Lock {
     }
 
     this.#config.logger.debug({ key: this.#key }, 'Lock acquired')
+    return true
   }
 
   /**
@@ -110,10 +110,11 @@ export class Lock {
    */
   async acquireImmediately() {
     const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
-    if (!result) throw new E_LOCK_ALREADY_ACQUIRED()
+    if (!result) return false
     this.#expirationTime = this.#ttl ? Date.now() + this.#ttl : null
 
     this.#config.logger.debug({ key: this.#key }, 'Lock acquired with acquireImmediately()')
+    return true
   }
 
   /**
@@ -121,10 +122,13 @@ export class Lock {
    * after the callback is done.
    * Also returns the callback return value
    */
-  async run<T>(callback: () => Promise<T>): Promise<T> {
+  async run<T>(callback: () => Promise<T>): Promise<[true, T] | [false, null]> {
+    const handle = await this.acquire()
+    if (!handle) return [false, null]
+
     try {
-      await this.acquire()
-      return await callback()
+      const result = await callback()
+      return [true, result]
     } finally {
       await this.release()
     }
@@ -134,12 +138,15 @@ export class Lock {
    * Same as `run` but try to acquire the lock immediately
    * Or throw an error if the lock is already acquired
    */
-  async runImmediately<T>(callback: () => Promise<T>): Promise<T> {
+  async runImmediately<T>(callback: () => Promise<T>): Promise<[true, T] | [false, null]> {
+    const handle = await this.acquireImmediately()
+    if (!handle) return [false, null]
+
     try {
-      await this.acquireImmediately()
-      return await callback()
+      const result = await callback()
+      return [true, result]
     } finally {
-      await this.release()
+      if (handle) await this.release()
     }
   }
 
