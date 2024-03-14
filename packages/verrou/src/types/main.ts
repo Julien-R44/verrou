@@ -76,7 +76,8 @@ export interface ResolvedLockConfig {
 
 export interface LockStore {
   /**
-   * Save the lock in the store if not already locked by another owner
+   * Save the lock in the store.
+   * This method should return false if the given key is already locked
    *
    * @param key The key to lock
    * @param owner The owner of the lock
@@ -87,26 +88,27 @@ export interface LockStore {
   save(key: string, owner: string, ttl: number | null): Promise<boolean>
 
   /**
-   * Delete the lock from the store if it is owned by the owner
-   * Otherwise throws a E_LOCK_NOT_OWNED error
+   * Delete the lock from the store if it is owned by the given owner
+   * Otherwise should throws a E_LOCK_NOT_OWNED error
    *
    * @param key The key to delete
-   * @param owner The owner of the lock
+   * @param owner The owner
    */
   delete(key: string, owner: string): Promise<void>
 
   /**
-   * Force delete the lock from the store. No check is made on the owner
+   * Force delete the lock from the store without checking the owner
    */
   forceDelete(key: string): Promise<void>
 
   /**
-   * Check if the lock exists
+   * Check if the lock exists. Returns true if so, false otherwise
    */
   exists(key: string): Promise<boolean>
 
   /**
-   * Extend the lock expiration. Throws an error if the lock is not owned by the owner
+   * Extend the lock expiration. Throws an error if the lock is not owned by
+   * the given owner
    * Duration is in milliseconds
    */
   extend(key: string, owner: string, duration: number): Promise<void>
