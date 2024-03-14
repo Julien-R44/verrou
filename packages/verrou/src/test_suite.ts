@@ -4,9 +4,9 @@ import type { Group } from '@japa/runner/core'
 import type { test as JapaTest } from '@japa/runner'
 import { setTimeout as sleep } from 'node:timers/promises'
 
+import { E_LOCK_NOT_OWNED } from '../index.js'
 import { LockFactory } from './lock_factory.js'
 import type { LockStore } from './types/main.js'
-import { E_LOCK_NOT_OWNED, E_LOCK_TIMEOUT } from '../index.js'
 
 export function registerStoreTestSuite(options: {
   test: typeof JapaTest
@@ -73,7 +73,7 @@ export function registerStoreTestSuite(options: {
     // @ts-expect-error poppinss/utils typing bug
   }).throws(E_LOCK_NOT_OWNED.message, E_LOCK_NOT_OWNED)
 
-  test('throws timeout error when lock is not acquired in time', async () => {
+  test('acquire returns false when lock is not acquired in time', async ({ assert }) => {
     const provider = new LockFactory(options.createStore(), {
       retry: { timeout: 500 },
     })
@@ -81,24 +81,25 @@ export function registerStoreTestSuite(options: {
 
     await lock.acquire()
 
-    await lock.acquire()
-    // @ts-expect-error poppinss/utils typing bug
-  }).throws(E_LOCK_TIMEOUT.message, E_LOCK_TIMEOUT)
+    const handle = await lock.acquire()
+    assert.isFalse(handle)
+  })
 
   test('run passes result', async ({ assert }) => {
     const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
-    const result = await lock.run(async () => 'hello world')
+    const [executed, result] = await lock.run(async () => 'hello world')
 
-    assert.equal(result, 'hello world')
+    assert.deepEqual(executed, true)
+    assert.deepEqual(result, 'hello world')
   })
 
   test('run passes result from a promise', async ({ assert }) => {
     const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
 
-    const result = await lock.run(async () => Promise.resolve('hello world'))
+    const [, result] = await lock.run(async () => Promise.resolve('hello world'))
 
     assert.equal(result, 'hello world')
   })
@@ -139,13 +140,13 @@ export function registerStoreTestSuite(options: {
 
     assert.isFalse(flag)
 
-    const result = await lock.run(async () => {
+    const [, result] = await lock.run(async () => {
       assert.isTrue(flag)
       return '42'
     })
 
     assert.isTrue(flag)
-    assert.equal(result, '42')
+    assert.deepEqual(result, '42')
   })
 
   test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
