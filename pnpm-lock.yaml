@@ -160,6 +160,9 @@ importers:
       '@aws-sdk/client-dynamodb':
         specifier: ^3.529.1
         version: 3.529.1
+      '@japa/expect-type':
+        specifier: 2.0.1
+        version: 2.0.1(@japa/runner@3.1.1)
       '@types/better-sqlite3':
         specifier: ^7.6.9
         version: 7.6.9
