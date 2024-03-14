@@ -14,17 +14,37 @@ Acquire the lock. If the lock is already acquired, it will wait until it is rele
 
 ```ts
 const lock = verrou.createLock('key', '10s')
-await lock.acquire()
-await lock.acquire({ retry: { timeout: 1000 } })
-await lock.acquire({ retry: { timeout: '1s' } })
+const acquired = await lock.acquire()
+const acquired = await lock.acquire({ retry: { timeout: 1000 } })
+const acquired = await lock.acquire({ retry: { timeout: '1s' } })
+
+if (acquired) {
+  await criticalSection()
+}
 ```
 
 Accept an optional object with the following properties:
 
 - `retry`: An object with the following properties:
-  - `timeout`: The maximum time to wait for the lock to be acquired. If the timeout is reached, an `E_LOCK_TIMEOUT` error will be thrown. Defaults to `Infinity`.
+  - `timeout`: The maximum time to wait for the lock to be acquired. Defaults to `Infinity`.
   - `delay`: The delay in miliseconds between each retry. Defaults to `250`
   - `attempts`: The maximum number of attempts to acquire the lock.
+
+`acquire` will return a boolean indicating if the lock was acquired or not
+
+### `acquireImmediately`
+
+Try to acquire the lock immediately ( without retrying ). If the lock is already acquired, it will return `false` immediately.
+
+```ts
+import { errors } from '@verrou/core'
+
+const lock = verrou.createLock('key')
+const acquired = await lock.acquireImmediately()
+if (acquired) {
+  await criticalSection()
+}
+```
 
 ### `release`
 
@@ -39,44 +59,30 @@ await lock.release()
 
 ### `run`
 
-Acquire the lock, run the callback, and release the lock.
+Acquire the lock, run the callback, and release the lock. The method will return a tuple with the first value being a boolean indicating if the lock was acquired or not, and the second value being the result of the callback.
 
 ```ts
 const lock = verrou.createLock('key')
-await lock.run(() => {
+const [executed, result] = await lock.run(() => {
   // do something
+  return 'result'
 })
 ```
 
+
 ### `runImmediately`
 
-Same as `run`, but try to acquire the lock immediately ( without retrying ). If the lock is already acquired, it will throws a `E_LOCK_ALREADY_ACQUIRED` error.
+Same as `run`, but try to acquire the lock immediately ( without retrying ).
 
 ```ts
 const lock = verrou.createLock('key')
-await lock.runImmediately(async () => {
+const [executed, result] = await lock.runImmediately(async () => {
   // do something
+  return 'result'
 })
 ```
 
 Accept an optional object with the same properties as `acquire`.
-
-### `acquireImmediately`
-
-Try to acquire the lock immediately ( without retrying ). If the lock is already acquired, it will throws a `E_LOCK_ALREADY_ACQUIRED` error.
-
-```ts
-import { errors } from '@verrou/core'
-
-const lock = verrou.createLock('key')
-try {
-  await lock.acquireImmediately()
-} catch (err) {
-  if (err instanceof E_LOCK_ALREADY_ACQUIRED) {
-
-  }
-}
-```
 
 ### `isLocked`
 

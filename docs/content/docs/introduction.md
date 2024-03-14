@@ -36,16 +36,13 @@ const verrou = new Verrou({
 
 ```ts
 // title: Manual lock
-import { Verrou, E_LOCK_TIMEOUT } from '@verrou/core'
+import { Verrou } from '@verrou/core'
 
 const lock = verrou.createLock('my-resource')
+const acquired = await lock.acquire()
+
 try {
-  await lock.acquire()
   await doSomething()
-} catch (error) {
-  if (error instanceof E_LOCK_TIMEOUT) {
-    // handle timeout
-  }
 } finally {
   await lock.release()
 }

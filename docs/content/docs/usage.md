@@ -38,13 +38,13 @@ import { verrou } from './verrou.js'
 const lock = verrou.createLock('my-resource', null)
 
 // We gonna wait for the lock to be acquired
-await lock.acquire()
+if (await lock.acquire()) {  
+  // Do your critical code here
+  doSomething()
 
-// Do your critical code here
-doSomething()
-
-// Once you are done, release the lock.
-await lock.release()
+  // Once you are done, release the lock.
+  await lock.release()
+}
 ```
 
 But we are still missing error handling. What if my `doSomething` method throws an error? The lock will never be released. To prevent this, always make sure to wrap your code with a try/catch/finaly block.
@@ -53,10 +53,10 @@ But we are still missing error handling. What if my `doSomething` method throws 
 import { verrou } from './verrou.js'
 
 const lock = verrou.createLock('my-resource', null)
+const acquired = await lock.acquire()
+if (!acquired) return 'Lock not acquired'
 
 try {
-  await lock.acquire()
-
   // Do your critical code here
   doSomething()
 } catch (error) {
@@ -115,29 +115,27 @@ await lock.acquire({
 
 In general, you will either use the `retry.attempts` or `retry.timeout` options.
 
-### Handling errors
+### Handling lock acquisition failure
 
-If ever you can't acquire a lock, an error will be thrown. You can catch it and handle it like this : 
+If ever you can't acquire a lock, `acquire` and `acquireImmediately` will return `false`. You can check if the lock was acquired by checking this value.
 
 ```ts
 import { errors } from '@verrou/core'
 
-try {
-  await lock.acquire()
-} catch (error) {
-  if (error instanceof errors.E_LOCK_TIMEOUT) {
-    // Handle the error
-  }
+const acquired = await lock.acquire()
+if (!acquired) {
+  return 'Lock not acquired'
 }
+```
 
-await lock.run(async () => {
-  // Do your critical code here
-  doSomething()
-}).catch(error => {
-  if (error instanceof errors.E_LOCK_TIMEOUT) {
-    // Handle the error
-  }
+`run` and `runImmediately` methods will return a tuple with the first value being a boolean indicating if the lock was acquired or not.
+
+```ts
+const [acquired, result] = await lock.run(async () => {
+  return doSomething()
 })
+
+if (!acquired) return 'Lock not acquired'
 ```
 
 ### Sharing a lock between multiple processes
