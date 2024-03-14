@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.529.1",
+    "@japa/expect-type": "2.0.1",
     "@types/better-sqlite3": "^7.6.9",
     "@types/pg": "^8.11.2",
     "@types/proper-lockfile": "^4.1.4",
