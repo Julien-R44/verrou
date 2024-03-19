@@ -12,6 +12,9 @@
     "./drivers/*": "./build/src/drivers/*.js",
     "./test_suite": "./build/src/test_suite.js"
   },
+  "files": [
+    "build"
+  ],
   "scripts": {
     "clean": "del-cli build",
     "typecheck": "tsc --noEmit",
