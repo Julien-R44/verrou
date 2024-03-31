@@ -40,5 +40,11 @@
     "title": "Create a custom lock store",
     "contentPath": "./extend/custom_lock_store.md",
     "category": "Extend"
+  },
+  {
+    "permalink": "adonisjs-integration",
+    "title": "AdonisJS",
+    "contentPath": "./integrations/adonisjs.md",
+    "category": "Integrations"
   }
 ]
