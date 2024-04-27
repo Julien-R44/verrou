@@ -11,6 +11,7 @@ Verrou supports multiple drivers to store the locks. No matter which driver you 
 You will need to install `ioredis` to use this driver.
 
 The Redis driver can be used with many different providers:
+
 - Upstash
 - Vercel KV
 - DragonFly
@@ -31,19 +32,19 @@ const verrou = new Verrou({
   default: 'redis',
   drivers: {
     redis: {
-      driver: redisStore({ connection: redis })
+      driver: redisStore({ connection: redis }),
     },
-  }
+  },
 })
 ```
 
 ```ts
 // title: LockFactory API
 import { Verrou, LockFactory } from '@verrou/core'
-import { redisStore } from '@verrou/core/drivers/redis'
+import { RedisStore } from '@verrou/core/drivers/redis'
 
 const redis = new Redis({ host: 'localhost', port: 6379 })
-const store = redisStore({ connection: redis })
+const store = new RedisStore({ connection: redis })
 
 const lockFactory = new LockFactory(store)
 ```
@@ -52,9 +53,9 @@ const lockFactory = new LockFactory(store)
 
 ### Options
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `connection` | An instance of `ioredis` | N/A |
+| Option       | Description              | Default |
+| ------------ | ------------------------ | ------- |
+| `connection` | An instance of `ioredis` | N/A     |
 
 ### Implementation details
 
@@ -62,7 +63,7 @@ Note that the Redis store does **not** use the redlock algorithm. It uses a simp
 
 ## Memory
 
-The memory store is a simple in-memory store, so don't use it in a multi-server environment. 
+The memory store is a simple in-memory store, so don't use it in a multi-server environment.
 
 Use [async-mutex](https://www.npmjs.com/package/async-mutex) under the hood.
 
@@ -77,16 +78,16 @@ const verrou = new Verrou({
   default: 'memory',
   drivers: {
     memory: { driver: memoryStore() },
-  }
+  },
 })
 ```
 
 ```ts
 // title: LockFactory API
 import { Verrou, LockFactory } from '@verrou/core'
-import { memoryStore } from '@verrou/core/drivers/memory'
+import { MemoryStore } from '@verrou/core/drivers/memory'
 
-const store = memoryStore()
+const store = new MemoryStore()
 const lockFactory = new LockFactory(store)
 ```
 
@@ -113,9 +114,9 @@ const verrou = new Verrou({
         connection: dynamoClient,
         // Name of the table where the locks will be stored
         table: { name: 'locks' },
-      })
-    }
-  }
+      }),
+    },
+  },
 })
 ```
 
@@ -123,30 +124,30 @@ const verrou = new Verrou({
 // title: LockFactory API
 import { Verrou, LockFactory } from '@verrou/core'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { dynamodbStore } from '@verrou/core/drivers/dynamodb'
+import { DynamoDBStore } from '@verrou/core/drivers/dynamodb'
 
 const dynamoClient = new DynamoDBClient(/* ... */)
-const store = dynamodbStore({
+const store = new DynamoDBStore({
   connection: dynamoClient,
   // Name of the table where the locks will be stored
   table: {
-    name: 'locks' 
+    name: 'locks',
   },
 })
 
 const lockFactory = new LockFactory(store)
-
 ```
+
 :::
 
 The DynamoDB table will be automatically created if it does not exists. Otherwise, you can create it manually and specify the name of the table in the options.
 
 ### Options
 
-| Option | Description | Default |
-| --- | --- | --- |
+| Option       | Description                                                 | Default |
+| ------------ | ----------------------------------------------------------- | ------- |
 | `table.name` | The name of the table that will be used to store the cache. | `cache` |
-| `connection` | An instance of `DynamoDBClient` | N/A |
+| `connection` | An instance of `DynamoDBClient`                             | N/A     |
 
 ## Databases
 
@@ -160,10 +161,10 @@ Note that you can easily create your own adapter by implementing the `DatabaseAd
 
 All Database drivers accept the following common options:
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `tableName` | The name of the table that will be used to store the locks. | `verrou` |
-| `autoCreateTable` | If the table should be automatically created if it does not exist. | `true` |
+| Option            | Description                                                        | Default  |
+| ----------------- | ------------------------------------------------------------------ | -------- |
+| `tableName`       | The name of the table that will be used to store the locks.        | `verrou` |
+| `autoCreateTable` | If the table should be automatically created if it does not exist. | `true`   |
 
 ### Knex
 
@@ -182,8 +183,8 @@ const db = knex({ client: 'mysql2', connection: MYSQL_CREDENTIALS })
 const verrou = new Verrou({
   default: 'sqlite',
   stores: {
-    sqlite: { driver: knexStore({ connection: db }) }
-  }
+    sqlite: { driver: knexStore({ connection: db }) },
+  },
 })
 ```
 
@@ -191,10 +192,11 @@ const verrou = new Verrou({
 // title: LockFactory API
 import knex from 'knex'
 import { Verrou, LockFactory } from '@verrou/core'
-import { knexStore } from '@verrou/core/drivers/knex'
+import { KnexAdapter } from '@verrou/core/drivers/knex'
+import { DatabaseStore } from '@verrou/core/drivers/database'
 
 const db = knex({ client: 'mysql2', connection: MYSQL_CREDENTIALS })
-const store = knexStore({ dialect: 'sqlite', connection: db })
+const store = new DatabaseStore(new KnexAdapter(db))
 const lockFactory = new LockFactory(store)
 ```
 
@@ -203,7 +205,6 @@ const lockFactory = new LockFactory(store)
 ### Kysely
 
 You must provide a Kysely instance to use the Kysely driver. Feel free to check the [Kysely documentation](https://kysely.dev/) for more details about the configuration. Kysely support the following databases : SQLite, MySQL, PostgreSQL and MSSQL.
-
 
 :::codegroup
 
@@ -218,8 +219,8 @@ const db = new Kysely<Database>({ dialect })
 const verrou = new Verrou({
   default: 'kysely',
   stores: {
-    kysely: { driver: kyselyStore({ connection: db }) }
-  }
+    kysely: { driver: kyselyStore({ connection: db }) },
+  },
 })
 ```
 
@@ -227,10 +228,11 @@ const verrou = new Verrou({
 // title: LockFactory API
 import { Kysely } from 'kysely'
 import { Verrou, LockFactory } from '@verrou/core'
-import { kyselyStore } from '@verrou/core/drivers/kysely'
+import { KyselyAdapter } from '@verrou/core/drivers/kysely'
+import { DatabaseStore } from '@verrou/core/drivers/database'
 
 const db = new Kysely<Database>({ dialect })
-const store = kyselyStore({ connection: db })
+const store = new DatabaseStore(new KyselyAdapter(db))
 const lockFactory = new LockFactory(store)
 ```
 

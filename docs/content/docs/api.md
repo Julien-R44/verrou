@@ -69,7 +69,6 @@ const [executed, result] = await lock.run(() => {
 })
 ```
 
-
 ### `runImmediately`
 
 Same as `run`, but try to acquire the lock immediately ( without retrying ).
@@ -157,7 +156,9 @@ await lock.forceRelease()
 Create a lock.
 
 ```ts
-const lockFactory = new LockFactory(redisStore())
+import { RedisStore } from '@verrou/core/drivers/redis'
+
+const lockFactory = new LockFactory(new RedisStore())
 const lock1 = lockFactory.createLock('key')
 const lock2 = lockFactory.createLock('key', '5m')
 const lock3 = lockFactory.createLock('key', 30_000)
@@ -170,14 +171,16 @@ First argument is the lock key. Second argument is optional and is the lock expi
 Restore a lock. Useful when sharing a lock between multiple processes. See [Sharing a lock between multiple processes](./usage.md#sharing-a-lock-between-multiple-processes) for more details.
 
 ```ts
-const lockFactory = new LockFactory(redisStore())
+import { RedisStore } from '@verrou/core/drivers/redis'
+
+const lockFactory = new LockFactory(new RedisStore())
 const lock1 = lockFactory.createLock('key', 'owner')
 const lock2 = lockFactory.restoreLock(lock1.serialize())
 ```
 
 ## Verrou API
 
-Verrou API is a wrapper around the LockFactory API. 
+Verrou API is a wrapper around the LockFactory API.
 
 ```ts
 const verrou = new Verrou({
@@ -191,7 +194,7 @@ const verrou = new Verrou({
 })
 ```
 
-Every method available on the `LockFactory` class is available on the `Verrou` class, and will be called on the default store. 
+Every method available on the `LockFactory` class is available on the `Verrou` class, and will be called on the default store.
 
 If you need to use a different store, you can use the `use` method.
 
@@ -210,4 +213,3 @@ As explained above, the `use` method allows you to use a different store than th
 ```ts
 verrou.use('myMemoryStore').createLock('key')
 ```
-

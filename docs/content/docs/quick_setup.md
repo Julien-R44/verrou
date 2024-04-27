@@ -10,8 +10,8 @@ You can install Verrou via your favorite package manager.
 Verrou is an ESM-only package. You will also need Node.js 18 or higher.
 :::
 
-
 :::codegroup
+
 ```sh
 // title: npm
 npm i @verrou/core
@@ -26,8 +26,8 @@ pnpm add @verrou/core
 // title: yarn
 yarn add @verrou/core
 ```
-:::
 
+:::
 
 ## Setup
 
@@ -46,8 +46,8 @@ const verrou = new Verrou({
   default: 'redis',
   stores: {
     redis: { driver: redisStore() },
-    memory: { driver: memoryStore() }
-  }
+    memory: { driver: memoryStore() },
+  },
 })
 ```
 
@@ -61,9 +61,9 @@ Alternatively, if having to keep a global variable is a hassle for you, you can 
 
 ```ts
 import { LockFactory } from '@verrou/core'
-import { redisStore } from '@verrou/core/drivers/redis'
+import { RedisStore } from '@verrou/core/drivers/redis'
 
-const lockFactory = new LockFactory(redisStore())
+const lockFactory = new LockFactory(new RedisStore())
 await lockFactory.createLock('foo').run(async () => {
   // do something
 })
