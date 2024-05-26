@@ -27,7 +27,7 @@ Accept an optional object with the following properties:
 
 - `retry`: An object with the following properties:
   - `timeout`: The maximum time to wait for the lock to be acquired. Defaults to `Infinity`.
-  - `delay`: The delay in miliseconds between each retry. Defaults to `250`
+  - `delay`: The delay in milliseconds between each retry. Defaults to `250`
   - `attempts`: The maximum number of attempts to acquire the lock.
 
 `acquire` will return a boolean indicating if the lock was acquired or not

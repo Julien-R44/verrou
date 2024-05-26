@@ -17,7 +17,7 @@ interface LockStore {
 
 Feel free to take a look at [the existing drivers](https://github.com/Julien-R44/verrou/tree/develop/src/drivers) implementations for inspiration. 
 
-Once you defined you driver, you can create a factory function that will be used by Verrou to create instances of your driver at runtime. The factory function must be something like this:
+Once you defined your driver, you can create a factory function that will be used by Verrou to create instances of your driver at runtime. The factory function must be something like this:
 
 ```ts
 import type { CreateDriverResult } from '@verrou/core/types'
