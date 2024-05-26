@@ -30,7 +30,7 @@ import { redisStore } from '@verrou/core/drivers/redis'
 const redis = new Redis({ host: 'localhost', port: 6379 })
 const verrou = new Verrou({
   default: 'redis',
-  drivers: {
+  stores: {
     redis: {
       driver: redisStore({ connection: redis }),
     },
@@ -54,7 +54,7 @@ const lockFactory = new LockFactory(store)
 ### Options
 
 | Option       | Description              | Default |
-| ------------ | ------------------------ | ------- |
+|--------------|--------------------------|---------|
 | `connection` | An instance of `ioredis` | N/A     |
 
 ### Implementation details
@@ -76,7 +76,7 @@ import { memoryStore } from '@verrou/core/drivers/memory'
 
 const verrou = new Verrou({
   default: 'memory',
-  drivers: {
+  stores: {
     memory: { driver: memoryStore() },
   },
 })
@@ -140,12 +140,12 @@ const lockFactory = new LockFactory(store)
 
 :::
 
-The DynamoDB table will be automatically created if it does not exists. Otherwise, you can create it manually and specify the name of the table in the options.
+The DynamoDB table will be automatically created if it does not exist. Otherwise, you can create it manually and specify the name of the table in the options.
 
 ### Options
 
 | Option       | Description                                                 | Default |
-| ------------ | ----------------------------------------------------------- | ------- |
+|--------------|-------------------------------------------------------------|---------|
 | `table.name` | The name of the table that will be used to store the cache. | `cache` |
 | `connection` | An instance of `DynamoDBClient`                             | N/A     |
 
@@ -155,14 +155,14 @@ We offer several drivers to use a database as the locks store. The database stor
 
 :::note
 
-Note that you can easily create your own adapter by implementing the `DatabaseAdapter` interface if you are using another library not supported by Verrou. See the [documentation](/docs/advanced/custom-adapters) for more details.
+Note that you can easily create your own adapter by implementing the `DatabaseAdapter` interface if you are using another library not supported by Verrou. See the [documentation](/docs/custom-lock-store#create-an-adapter-for-the-databasestore) for more details.
 
 :::
 
 All Database drivers accept the following common options:
 
 | Option            | Description                                                        | Default  |
-| ----------------- | ------------------------------------------------------------------ | -------- |
+|-------------------|--------------------------------------------------------------------|----------|
 | `tableName`       | The name of the table that will be used to store the locks.        | `verrou` |
 | `autoCreateTable` | If the table should be automatically created if it does not exist. | `true`   |
 

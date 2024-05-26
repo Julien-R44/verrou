@@ -27,7 +27,7 @@ import { memoryStore } from '@verrou/core/drivers/memory'
 
 const verrou = new Verrou({
   default: 'redis',
-  drivers: {
+  stores: {
     redis: { driver: redisStore() },
     memory: { driver: memoryStore() }
   }
@@ -62,7 +62,7 @@ await lock.run(async () => {
 
 Main advantage of Verrou is that it provides a consistent API across all drivers. This means that you can switch from one driver to another without having to change your code. It also means you can switch to an in-memory in your test environment, making tests faster and easier to setup (no infrastructure or anything fancy to setup).
 
-Having a consistent API also means that you don't have to learn a new API when switching from one driver to another. Today, in the node ecosystem, we have different npm packages to manage locks, but they all have differents APIs and behaviors.
+Having a consistent API also means that you don't have to learn a new API when switching from one driver to another. Today, in the node ecosystem, we have different npm packages to manage locks, but they all have different APIs and behaviors.
 
 But having a consistent API doesn't mean having a less powerful API. Verrou provides every features you would expect from a locking library, and even more.
 
@@ -73,7 +73,7 @@ Well, locks is a very common pattern in software development. It is used to prev
 Let's say you are writing code for a banking system. You have a function that transfer money from one account to another. We gonna implement it very naively, and then we will see what can go wrong.
 
 ```ts
-router.get('/transfer', () => {
+router.get('/transfer', async () => {
   const fromAccount = getAccountFromDb(request.input('from'))
   const toAccount = getAccountFromDb(request.input('to'))
 
@@ -108,7 +108,7 @@ As a result, we lost 100$ somewhere. And that's not good. This is what we also c
 They are multiple ways to solve this problem. But let's use a lock here. By adding a lock, we are preventing concurrent requests from accessing the same piece of code at the same time :
 
 ```ts
-router.get('/transfer', () => {
+router.get('/transfer', async () => {
   // Other requests will wait just here until the lock is released
   await verrou.createLock('transfer').run(async () => {
     const fromAccount = getAccountFromDb(request.input('from'))
