@@ -29,7 +29,7 @@ import { redisStore } from '@verrou/core/drivers/redis'
 
 const redis = new Redis({ host: 'localhost', port: 6379 })
 const verrou = new Verrou({
-  default: 'redis', 
+  default: 'redis',
   stores: {
     redis: {
       driver: redisStore({ connection: redis }),
