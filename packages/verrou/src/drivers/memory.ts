@@ -84,10 +84,11 @@ export class MemoryStore implements LockStore {
   async delete(key: string, owner: string) {
     const mutex = this.#locks.get(key)
 
-    if (!mutex || !mutex.releaser) throw new E_LOCK_NOT_OWNED()
+    if (!mutex || !mutex.releaser) return
     if (mutex.owner !== owner) throw new E_LOCK_NOT_OWNED()
 
     mutex.releaser()
+    this.#locks.delete(key)
   }
 
   /**

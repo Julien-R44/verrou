@@ -149,6 +149,28 @@ export function registerStoreTestSuite(options: {
     assert.deepEqual(result, '42')
   })
 
+  test('run is exclusive with two factories', async ({ assert }) => {
+    const provider = new LockFactory(options.createStore())
+    const lock1 = provider.createLock('foo')
+    const lock2 = provider.createLock('foo')
+
+    let flag = false
+    lock1.run(async () => {
+      await sleep(500)
+      flag = true
+    })
+
+    assert.isFalse(flag)
+
+    const [, result] = await lock2.run(async () => {
+      assert.isTrue(flag)
+      return '42'
+    })
+
+    assert.isTrue(flag)
+    assert.deepEqual(result, '42')
+  })
+
   test('exceptions during run do not leave mutex in locked state', async ({ assert }) => {
     const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
