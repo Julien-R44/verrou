@@ -148,8 +148,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       '@poppinss/utils':
-        specifier: ^6.8.1
-        version: 6.8.1
+        specifier: ^6.8.2
+        version: 6.8.3
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
@@ -1226,8 +1226,8 @@ packages:
     resolution: {integrity: sha512-C7K0gy7nW0XzlWcuVrSqT1nLQBAddhpgbnvHtYtxFYkS/BdJKzeVz771c80yhLcmrqXoGqZZgjdC7y6Me1L4Tg==}
     engines: {node: '>=18.16.0'}
 
-  '@poppinss/utils@6.8.1':
-    resolution: {integrity: sha512-iVom/rkK2N2fPjkhAOrgNb7HnPxxoMOL1NGmQwfg7UARAQJ9PRX0zkboUcNaAsuyrtswMuSnhVVZBB84fCDVVQ==}
+  '@poppinss/utils@6.8.3':
+    resolution: {integrity: sha512-YGeH7pIUm9ExONURNH3xN61dBZ0SXgVuPA9E76t7EHeZHXPNrmR8TlbXQaka6kd5n+cpBNcHG4VsVfYf59bZ7g==}
     engines: {node: '>=18.16.0'}
 
   '@poppinss/validator-lite@1.0.3':
@@ -5905,7 +5905,7 @@ snapshots:
       '@poppinss/hooks': 7.2.2
       '@poppinss/macroable': 1.0.1
       '@poppinss/prompts': 3.1.2
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
       fastest-levenshtein: 1.0.16
       jsonschema: 1.4.1
       string-width: 7.1.0
@@ -5919,7 +5919,7 @@ snapshots:
       '@adonisjs/fold': 10.0.1
       '@poppinss/hooks': 7.2.2
       '@poppinss/macroable': 1.0.1
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
       glob-parent: 6.0.2
       tempura: 0.4.0
 
@@ -5951,7 +5951,7 @@ snapshots:
       '@paralleldrive/cuid2': 2.2.2
       '@poppinss/macroable': 1.0.1
       '@poppinss/multiparty': 2.0.1
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
       '@types/qs': 6.9.11
       bytes: 3.1.2
       file-type: 19.0.0
@@ -5962,7 +5962,7 @@ snapshots:
 
   '@adonisjs/config@5.0.1':
     dependencies:
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
 
   '@adonisjs/core@6.3.1(@adonisjs/assembler@7.2.3(typescript@5.6.2))(edge.js@6.0.1)':
     dependencies:
@@ -5996,11 +5996,11 @@ snapshots:
 
   '@adonisjs/encryption@6.0.1':
     dependencies:
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
 
   '@adonisjs/env@5.0.1':
     dependencies:
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
       '@poppinss/validator-lite': 1.0.3
       dotenv: 16.4.5
       split-lines: 3.0.0
@@ -6017,18 +6017,18 @@ snapshots:
     dependencies:
       '@adonisjs/application': 8.1.0(@adonisjs/config@5.0.1)(@adonisjs/fold@10.0.1)
       '@adonisjs/fold': 10.0.1
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
       '@sindresorhus/is': 6.1.0
       emittery: 1.0.1
 
   '@adonisjs/fold@10.0.1':
     dependencies:
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
 
   '@adonisjs/hash@9.0.1':
     dependencies:
       '@phc/format': 1.0.0
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
 
   '@adonisjs/http-server@7.1.0(@adonisjs/application@8.1.0(@adonisjs/config@5.0.1)(@adonisjs/fold@10.0.1))(@adonisjs/encryption@6.0.1)(@adonisjs/events@9.0.1(@adonisjs/application@8.1.0(@adonisjs/config@5.0.1)(@adonisjs/fold@10.0.1))(@adonisjs/fold@10.0.1))(@adonisjs/fold@10.0.1)(@adonisjs/logger@6.0.2)':
     dependencies:
@@ -6041,7 +6041,7 @@ snapshots:
       '@poppinss/macroable': 1.0.1
       '@poppinss/matchit': 3.1.2
       '@poppinss/middleware': 3.2.2
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
       '@sindresorhus/is': 6.1.0
       accepts: 1.3.8
       content-disposition: 0.5.4
@@ -6061,7 +6061,7 @@ snapshots:
 
   '@adonisjs/logger@6.0.2':
     dependencies:
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
       abstract-logging: 2.0.1
       pino: 8.17.2
 
@@ -7235,7 +7235,7 @@ snapshots:
   '@poppinss/prompts@3.1.2':
     dependencies:
       '@poppinss/colors': 4.1.2
-      '@poppinss/utils': 6.8.1
+      '@poppinss/utils': 6.8.3
       enquirer: 2.4.1
 
   '@poppinss/utils@6.7.0':
@@ -7268,7 +7268,7 @@ snapshots:
       slugify: 1.6.6
       truncatise: 0.0.8
 
-  '@poppinss/utils@6.8.1':
+  '@poppinss/utils@6.8.3':
     dependencies:
       '@lukeed/ms': 2.0.2
       '@types/bytes': 3.1.4
@@ -11077,7 +11077,7 @@ snapshots:
       process-warning: 3.0.0
       quick-format-unescaped: 4.0.4
       real-require: 0.2.0
-      safe-stable-stringify: 2.4.3
+      safe-stable-stringify: 2.5.0
       sonic-boom: 3.7.0
       thread-stream: 2.4.1
 

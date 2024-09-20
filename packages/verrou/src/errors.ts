@@ -1,4 +1,4 @@
-import { createError } from '@poppinss/utils'
+import { createError } from '@poppinss/utils/exception'
 
 /**
  * Thrown when user tries to update/release/extend a lock that is not acquired by them
