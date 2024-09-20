@@ -42,22 +42,22 @@
   },
   "dependencies": {
     "@lukeed/ms": "^2.0.2",
-    "@poppinss/utils": "^6.7.2",
-    "async-mutex": "^0.4.1",
+    "@poppinss/utils": "^6.8.1",
+    "async-mutex": "^0.5.0",
     "typescript-log": "^2.0.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.529.1",
-    "@japa/expect-type": "2.0.1",
-    "@types/better-sqlite3": "^7.6.9",
-    "@types/pg": "^8.11.2",
+    "@aws-sdk/client-dynamodb": "^3.654.0",
+    "@japa/expect-type": "2.0.2",
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/pg": "^8.11.10",
     "@types/proper-lockfile": "^4.1.4",
-    "better-sqlite3": "^9.4.3",
-    "ioredis": "^5.3.2",
+    "better-sqlite3": "^9.6.0",
+    "ioredis": "^5.4.1",
     "knex": "^3.1.0",
-    "kysely": "^0.27.3",
-    "mysql2": "^3.9.2",
-    "pg": "^8.11.3",
+    "kysely": "^0.27.4",
+    "mysql2": "^3.11.3",
+    "pg": "^8.13.0",
     "sqlite3": "^5.1.7"
   },
   "publishConfig": {
