@@ -23,6 +23,11 @@ pnpm add @verrou/core
 ```
 
 ```sh
+// title: bun
+bun i @verrou/core
+```
+
+```sh
 // title: yarn
 yarn add @verrou/core
 ```
