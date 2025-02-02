@@ -1,4 +1,4 @@
-import type { Logger } from 'typescript-log'
+import type { Logger } from '@julr/utils/logger'
 
 export * from './drivers.js'
 

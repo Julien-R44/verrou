@@ -1,4 +1,4 @@
-import { noopLogger, type Logger } from 'typescript-log'
+import { noopLogger, type Logger } from '@julr/utils/logger'
 
 import { LockFactory } from './lock_factory.js'
 import type { Duration, SerializedLock, StoreFactory } from './types/main.js'

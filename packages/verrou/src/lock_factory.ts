@@ -1,4 +1,4 @@
-import { noopLogger } from 'typescript-log'
+import { noopLogger } from '@julr/utils/logger'
 
 import { Lock } from './lock.js'
 import { resolveDuration } from './helpers.js'

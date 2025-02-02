@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { noopLogger } from 'typescript-log'
+import { noopLogger } from '@julr/utils/logger'
 import { setTimeout } from 'node:timers/promises'
 
 import { Lock } from '../src/lock.js'
