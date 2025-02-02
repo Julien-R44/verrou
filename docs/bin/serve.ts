@@ -94,7 +94,11 @@ new Ignitor(APP_ROOT, { importer: IMPORTER })
             },
           },
         },
-        vite: defineConfig({}),
+        vite: defineConfig({
+          scriptAttributes: {
+            defer: true,
+          },
+        }),
       })
     })
 
