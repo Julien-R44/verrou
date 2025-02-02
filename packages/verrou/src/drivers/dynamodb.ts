@@ -105,7 +105,7 @@ export class DynamoDBStore implements LockStore {
 
     try {
       await this.#connection.send(command)
-    } catch (err) {
+    } catch {
       throw new E_LOCK_NOT_OWNED()
     }
   }
@@ -157,7 +157,7 @@ export class DynamoDBStore implements LockStore {
 
     try {
       await this.#connection.send(command)
-    } catch (err) {
+    } catch {
       throw new E_LOCK_NOT_OWNED()
     }
   }

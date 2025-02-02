@@ -53,7 +53,7 @@ export class DatabaseStore {
     try {
       await this.#adapter.insertLock({ key, owner, expiration: this.#computeExpiresAt(ttl) })
       return true
-    } catch (error) {
+    } catch {
       const updatedRows = await this.#adapter.acquireLock({
         key,
         owner,
