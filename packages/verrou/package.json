@@ -41,12 +41,12 @@
     }
   },
   "dependencies": {
-    "@julr/utils": "^1.4.0",
+    "@julr/utils": "^1.6.2",
     "@poppinss/utils": "^6.9.2",
     "async-mutex": "^0.5.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.738.0",
+    "@aws-sdk/client-dynamodb": "^3.741.0",
     "@japa/expect-type": "2.0.3",
     "@types/better-sqlite3": "^7.6.12",
     "@types/pg": "^8.11.11",
