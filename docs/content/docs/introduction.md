@@ -105,7 +105,7 @@ As a result, we lost 100$ somewhere. And that's not good. This is what we also c
 
 ---
 
-They are multiple ways to solve this problem. But let's use a lock here. By adding a lock, we are preventing concurrent requests from accessing the same piece of code at the same time :
+There are multiple ways to solve this problem. But let's use a lock here. By adding a lock, we are preventing concurrent requests from accessing the same piece of code at the same time :
 
 ```ts
 router.get('/transfer', async () => {
