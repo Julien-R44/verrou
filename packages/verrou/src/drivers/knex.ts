@@ -32,13 +32,22 @@ export class KnexAdapter implements DatabaseAdapter {
   }
 
   async createTableIfNotExists() {
-    const hasTable = await this.#connection.schema.hasTable(this.#tableName)
-    if (hasTable) return
-
-    await this.#connection.schema.createTable(this.#tableName, (table) => {
-      table.string('key', 255).notNullable().primary()
-      table.string('owner').notNullable()
-      table.bigint('expiration').unsigned().nullable()
+    await this.#connection.transaction(async (trx) => {
+      // Acquire transaction-level lock to ensure only
+      // one process creates the table with the same name.
+      await trx.raw(
+        "SELECT pg_advisory_xact_lock(hashtext(?))",
+        [this.#tableName]
+      )
+      
+      const hasTable = await trx.schema.hasTable(this.#tableName)
+      if (hasTable) return
+      
+      await trx.schema.createTable(this.#tableName, (table) => {
+        table.string('key', 255).notNullable().primary()
+        table.string('owner').notNullable()
+        table.bigint('expiration').unsigned().nullable()
+      })
     })
   }
 
