@@ -1,7 +1,7 @@
 {
   "name": "@verrou/core",
   "type": "module",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "ISC",
