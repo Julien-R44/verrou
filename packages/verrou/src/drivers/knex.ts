@@ -32,14 +32,23 @@ export class KnexAdapter implements DatabaseAdapter {
   }
 
   async createTableIfNotExists() {
-    const hasTable = await this.#connection.schema.hasTable(this.#tableName)
-    if (hasTable) return
-
-    await this.#connection.schema.createTable(this.#tableName, (table) => {
-      table.string('key', 255).notNullable().primary()
-      table.string('owner').notNullable()
-      table.bigint('expiration').unsigned().nullable()
-    })
+    try {
+      await this.#connection.schema.createTable(this.#tableName, (table) => {
+        table.string('key', 255).notNullable().primary()
+        table.string('owner').notNullable()
+        table.bigint('expiration').unsigned().nullable()
+      })
+    } catch {
+      /**
+       * If table creation fails, verify the table actually exists.
+       * This handles weird race conditions where multiple instances try to create
+       * the table simultaneously
+       *
+       * See https://github.com/Julien-R44/verrou/pull/15
+       */
+      const hasTable = await this.#connection.schema.hasTable(this.#tableName)
+      if (!hasTable) throw new Error(`Failed to create table "${this.#tableName}"`)
+    }
   }
 
   async insertLock(lock: { key: string; owner: string; expiration: number | null }) {
