@@ -3,10 +3,10 @@
   "type": "module",
   "dependencies": {
     "@verrou/core": "workspace:*",
-    "ioredis": "^5.4.2",
-    "pino": "^9.6.0"
+    "ioredis": "^5.8.2",
+    "pino": "^10.1.0"
   },
   "devDependencies": {
-    "pino-pretty": "^13.0.0"
+    "pino-pretty": "^13.1.3"
   }
 }

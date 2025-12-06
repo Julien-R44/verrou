@@ -5,7 +5,7 @@ import { setTimeout } from 'node:timers/promises'
 import { redisStore } from '@verrou/core/drivers/redis'
 import { memoryStore } from '@verrou/core/drivers/memory'
 
-const logger = pino.default({ level: 'debug', transport: { target: 'pino-pretty' } })
+const logger = pino({ level: 'debug', transport: { target: 'pino-pretty' } })
 
 logger.info('Hello world')
 

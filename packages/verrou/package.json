@@ -41,22 +41,22 @@
     }
   },
   "dependencies": {
-    "@julr/utils": "^1.6.2",
-    "@poppinss/utils": "^6.9.2",
+    "@julr/utils": "^1.9.0",
+    "@poppinss/utils": "^6.10.1",
     "async-mutex": "^0.5.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.741.0",
+    "@aws-sdk/client-dynamodb": "^3.946.0",
     "@japa/expect-type": "2.0.3",
-    "@types/better-sqlite3": "^7.6.12",
-    "@types/pg": "^8.11.11",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/pg": "^8.15.6",
     "@types/proper-lockfile": "^4.1.4",
-    "better-sqlite3": "^11.8.1",
-    "ioredis": "^5.4.2",
+    "better-sqlite3": "^12.5.0",
+    "ioredis": "^5.8.2",
     "knex": "^3.1.0",
-    "kysely": "^0.27.5",
-    "mysql2": "^3.12.0",
-    "pg": "^8.13.1",
+    "kysely": "^0.28.8",
+    "mysql2": "^3.15.3",
+    "pg": "^8.16.3",
     "sqlite3": "^5.1.7"
   },
   "publishConfig": {
