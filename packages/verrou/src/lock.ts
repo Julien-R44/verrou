@@ -183,6 +183,9 @@ export class Lock {
 
   /**
    * Extends the lock TTL
+   *
+   * Note: this resets the lock TTL, it does not
+   * add duration to the current lock TTL
    */
   async extend(ttl?: Duration) {
     const resolvedTtl = ttl ? resolveDuration(ttl) : this.#ttl
