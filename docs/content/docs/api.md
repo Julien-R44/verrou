@@ -131,12 +131,13 @@ Argument is optional and defaults to the lock expiration time.
 
 ### `getRemainingTime`
 
-Get the remaining time before the lock expires.
+Get the remaining time in milliseconds before the lock expires.
 
 ```ts
 const lock = verrou.createLock('key', '10s')
 await lock.acquire()
 
+// returns remaining time for the lock in milliseconds
 const remainingTime = lock.getRemainingTime()
 ```
 
