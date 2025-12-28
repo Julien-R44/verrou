@@ -174,7 +174,7 @@ export class Lock {
   }
 
   /**
-   * Get the remaining time before the lock expires
+   * Get the remaining time in milliseconds before the lock expires
    */
   getRemainingTime() {
     if (this.#expirationTime === null) return null
