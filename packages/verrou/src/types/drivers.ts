@@ -1,6 +1,5 @@
 import type { Knex } from 'knex'
 import type { Kysely } from 'kysely'
-import type { Redis as IoRedis } from 'ioredis'
 import type { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
 /**
@@ -43,13 +42,28 @@ export interface KyselyOptions extends DatabaseOptions {
 }
 
 /**
+ * The subset of the ioredis API used by the Redis store.
+ *
+ * Typed structurally rather than against the `Redis` class so that
+ * any ioredis version (v5, v6), reply mapping (`legacy`, `resp3`)
+ * or `Cluster` instance is accepted.
+ */
+export interface RedisConnection {
+  set(key: string, value: string, px: 'PX', ms: number, nx: 'NX'): Promise<'OK' | null>
+  setnx(key: string, value: string): Promise<number>
+  eval(script: string, numKeys: number, ...args: (string | number)[]): Promise<unknown>
+  del(key: string): Promise<number>
+  get(key: string): Promise<string | null>
+}
+
+/**
  * Options for the Redis store
  */
 export type RedisStoreOptions = {
   /**
-   * The Redis connection
+   * The Redis connection. Any ioredis `Redis` or `Cluster` instance
    */
-  connection: IoRedis
+  connection: RedisConnection
 }
 
 /**

@@ -30,7 +30,7 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.484.0",
-    "ioredis": "^5.3.2"
+    "ioredis": "^5.3.2 || ^6.0.0"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": {
