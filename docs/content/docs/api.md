@@ -192,6 +192,40 @@ const lock1 = lockFactory.createLock('key', 'owner')
 const lock2 = lockFactory.restoreLock(lock1.serialize())
 ```
 
+### `shutdown`
+
+Stops acquisitions, waits for active `run` and `runImmediately` callbacks, then releases this factory's remaining locks. Returns `Promise<void>`.
+
+```ts
+await lockFactory.shutdown({ timeout: '10s' })
+```
+
+The optional `ShutdownOptions` argument is exported from `@verrou/core/types`. Its `timeout` property defaults to `30_000`:
+
+| `timeout` | Callback wait |
+| --- | --- |
+| Number or duration string | At most that duration |
+| `0` | No wait |
+| `null` | Until all callbacks finish |
+
+The timeout does not cancel callbacks or limit store requests. Connections remain open.
+
+- Acquisitions reject with `E_SHUTDOWN` as soon as shutdown starts, including retries and calls through existing handles.
+- Acquisitions already sent to the store settle before cleanup. A late success is released without starting its callback.
+- Repeated shutdown calls return the same promise. Only the first call's options apply.
+
+Cleanup uses owner tokens and attempts every release. Ownership-loss errors are ignored. Other release failures reject shutdown with an `AggregateError`.
+
+If a release fails, the lease remains tracked until release or expiration. You can retry `lock.release()` after the store recovers.
+
+Within a factory, store mutations for the same key run in order. Different keys and stores remain independent.
+
+Only leases acquired or extended through this factory are tracked. Released and expired leases are removed. Directly constructed `Lock` instances are not managed.
+
+`restoreLock()` alone does not register a lease. Extending a restored or expired lease registers it, and releasing a restored handle removes the matching lease. `serialize()` does not transfer tracking to another process.
+
+After shutdown starts, `release()` does nothing for an untracked lease. This lets callbacks finish after shutdown has released their locks.
+
 ## Verrou API
 
 Verrou API is a wrapper around the LockFactory API.
@@ -208,7 +242,7 @@ const verrou = new Verrou({
 })
 ```
 
-Every method available on the `LockFactory` class is available on the `Verrou` class, and will be called on the default store.
+`createLock` and `restoreLock` use the default store. `shutdown` shuts down all initialized stores, not just the default store.
 
 If you need to use a different store, you can use the `use` method.
 
@@ -227,3 +261,17 @@ As explained above, the `use` method allows you to use a different store than th
 ```ts
 verrou.use('myMemoryStore').createLock('key')
 ```
+
+### `shutdown`
+
+Shuts down all initialized stores concurrently. Accepts the same options as [`LockFactory.shutdown`](#shutdown).
+
+```ts
+await verrou.shutdown({ timeout: '10s' })
+```
+
+Unused stores remain uninitialized. Accessing one after shutdown throws `E_SHUTDOWN`.
+
+A store failure does not stop the other stores' cleanup. The returned promise rejects with an `AggregateError` containing the failing factories' errors.
+
+See [Graceful shutdown](./usage.md#graceful-shutdown) for a SIGTERM handler and connection cleanup.

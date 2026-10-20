@@ -1,5 +1,7 @@
 import type { Logger } from '@julr/utils/logger'
 
+import type { LockLifecycle } from '../lock_lifecycle.js'
+
 export * from './drivers.js'
 
 /**
@@ -63,6 +65,20 @@ export interface LockFactoryOptions {
 }
 
 /**
+ * Options passed to Verrou.shutdown and LockFactory.shutdown.
+ */
+export interface ShutdownOptions {
+  /**
+   * Maximum wait for running callbacks before releasing their locks.
+   * Use 0 to release immediately or null to wait without a deadline.
+   * This does not limit the duration of store operations.
+   *
+   * @default 30_000
+   */
+  timeout?: Duration
+}
+
+/**
  * Resolved configuration values
  */
 export interface ResolvedLockConfig {
@@ -72,6 +88,8 @@ export interface ResolvedLockConfig {
     timeout?: number
   }
   logger: Logger
+  /** @internal */
+  lifecycle?: LockLifecycle
 }
 
 export interface LockStore {

@@ -65,6 +65,7 @@ export class Lock {
    * Acquire the lock
    */
   async acquire(options: LockAcquireOptions = {}) {
+    this.#config.lifecycle?.signal.throwIfAborted()
     this.#expirationTime = null
 
     let attemptsDone = 0
@@ -80,6 +81,7 @@ export class Lock {
        * Try to acquire the lock
        */
       const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
+      this.#config.lifecycle?.signal.throwIfAborted()
       if (result) {
         this.#expirationTime = this.#ttl ? now + this.#ttl : null
         break
@@ -99,7 +101,12 @@ export class Lock {
       /**
        * Otherwise wait for the delay and try again
        */
-      await setTimeout(delay)
+      try {
+        await setTimeout(delay, undefined, { signal: this.#config.lifecycle?.signal })
+      } catch (error) {
+        this.#config.lifecycle?.signal.throwIfAborted()
+        throw error
+      }
     }
 
     this.#config.logger.debug({ key: this.#key }, 'Lock acquired')
@@ -110,7 +117,9 @@ export class Lock {
    * Try to acquire the lock immediately or throw an error
    */
   async acquireImmediately() {
+    this.#config.lifecycle?.signal.throwIfAborted()
     const result = await this.#lockStore.save(this.#key, this.#owner, this.#ttl)
+    this.#config.lifecycle?.signal.throwIfAborted()
     if (!result) return false
     this.#expirationTime = this.#ttl ? Date.now() + this.#ttl : null
 
@@ -124,14 +133,20 @@ export class Lock {
    * Also returns the callback return value
    */
   async run<T>(callback: () => Promise<T>): Promise<[true, T] | [false, null]> {
-    const handle = await this.acquire()
-    if (!handle) return [false, null]
-
+    const finish = this.#config.lifecycle?.startRun()
     try {
-      const result = await callback()
-      return [true, result]
+      const handle = await this.acquire()
+      if (!handle) return [false, null]
+
+      try {
+        this.#config.lifecycle?.signal.throwIfAborted()
+        const result = await callback()
+        return [true, result]
+      } finally {
+        await this.release()
+      }
     } finally {
-      await this.release()
+      finish?.()
     }
   }
 
@@ -140,14 +155,20 @@ export class Lock {
    * Or throw an error if the lock is already acquired
    */
   async runImmediately<T>(callback: () => Promise<T>): Promise<[true, T] | [false, null]> {
-    const handle = await this.acquireImmediately()
-    if (!handle) return [false, null]
-
+    const finish = this.#config.lifecycle?.startRun()
     try {
-      const result = await callback()
-      return [true, result]
+      const handle = await this.acquireImmediately()
+      if (!handle) return [false, null]
+
+      try {
+        this.#config.lifecycle?.signal.throwIfAborted()
+        const result = await callback()
+        return [true, result]
+      } finally {
+        await this.release()
+      }
     } finally {
-      if (handle) await this.release()
+      finish?.()
     }
   }
 

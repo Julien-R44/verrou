@@ -2,12 +2,14 @@ import { noopLogger } from '@julr/utils/logger'
 
 import { Lock } from './lock.js'
 import { resolveDuration } from './helpers.js'
+import { LockLifecycle } from './lock_lifecycle.js'
 import type {
   Duration,
   ResolvedLockConfig,
   LockFactoryOptions,
   LockStore,
   SerializedLock,
+  ShutdownOptions,
 } from './types/main.js'
 
 export class LockFactory {
@@ -24,9 +26,9 @@ export class LockFactory {
   }
 
   /**
-   * The store used to persist locks
+   * The store and lifecycle of locks created by this factory
    */
-  #store: LockStore
+  #lifecycle: LockLifecycle
 
   /**
    * Resolved LockFactory configuration
@@ -34,7 +36,7 @@ export class LockFactory {
   #config: ResolvedLockConfig
 
   constructor(store: LockStore, options: LockFactoryOptions = {}) {
-    this.#store = store
+    this.#lifecycle = new LockLifecycle(store)
     this.#config = {
       retry: {
         attempts: options.retry?.attempts ?? LockFactory.#kDefaults.retry.attempts,
@@ -42,6 +44,7 @@ export class LockFactory {
         timeout: resolveDuration(options.retry?.timeout, null),
       },
       logger: (options.logger ?? noopLogger()).child({ pkg: 'verrou' }),
+      lifecycle: this.#lifecycle,
     }
   }
 
@@ -49,7 +52,7 @@ export class LockFactory {
    * Create a new lock
    */
   createLock(name: string, ttl: Duration = LockFactory.#kDefaults.ttl) {
-    return new Lock(name, this.#store, this.#config, undefined, resolveDuration(ttl))
+    return new Lock(name, this.#lifecycle, this.#config, undefined, resolveDuration(ttl))
   }
 
   /**
@@ -58,6 +61,21 @@ export class LockFactory {
    * that acquired it.
    */
   restoreLock(lock: SerializedLock) {
-    return new Lock(lock.key, this.#store, this.#config, lock.owner, lock.ttl, lock.expirationTime)
+    return new Lock(
+      lock.key,
+      this.#lifecycle,
+      this.#config,
+      lock.owner,
+      lock.ttl,
+      lock.expirationTime,
+    )
+  }
+
+  /**
+   * Stop acquisitions, wait for running callbacks, and release held locks.
+   * Repeated calls return the same promise. Connections remain open.
+   */
+  shutdown(options: ShutdownOptions = {}) {
+    return this.#lifecycle.shutdown(options)
   }
 }

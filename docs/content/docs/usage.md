@@ -227,3 +227,47 @@ await lock.extend('5s')
 ```
 
 You may also use the `lock.isExpired()` or `lock.getRemainingTime()` methods to check if the lock is expired or get the remaining time before it expires.
+
+## Graceful shutdown
+
+Stop accepting requests and jobs, then shut down the `Verrou` instance your application uses:
+
+```ts
+await verrou.shutdown({ timeout: '10s' })
+```
+
+This stops new acquisitions, waits for active `run` and `runImmediately` callbacks, then releases the remaining locks across all stores. Locks without a TTL are included.
+
+A standalone `LockFactory` has the same method. Always shut down the instance that acquired the locks, not a new instance.
+
+### Choose a callback timeout
+
+The default wait is 30 seconds. Set `timeout` to `0` to release locks immediately, or `null` to wait until all callbacks finish.
+
+Choose a timeout long enough for your critical sections. After the deadline, callbacks continue without their locks. Verrou does not cancel them.
+
+The timeout covers callbacks, not store requests. Configure network timeouts on your connections separately.
+
+### Handle SIGTERM
+
+Add `shutdown` to your application's signal handler. Verrou does not install one:
+
+```ts
+import { verrou } from './verrou.js'
+
+process.once('SIGTERM', () => {
+	// Stop accepting requests and jobs before shutting down locks.
+	void verrou.shutdown({ timeout: '10s' }).catch((error) => {
+		console.error('Failed to release locks during shutdown', error)
+		process.exitCode = 1
+	})
+})
+```
+
+Await cleanup before exiting. The synchronous `exit` event cannot run this cleanup, and `SIGKILL` skips it entirely. Keep a finite TTL when possible.
+
+### Close store connections after shutdown
+
+Drivers leave application-supplied connections open. After `shutdown`, close them with their own APIs, such as `redis.quit()` or `knex.destroy()`.
+
+Put connection cleanup in a `finally` block so a failed lock release does not skip it. See the [shutdown reference](./api.md#shutdown) for errors and lock tracking rules.

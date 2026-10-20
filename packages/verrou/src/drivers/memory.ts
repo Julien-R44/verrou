@@ -69,6 +69,7 @@ export class MemoryStore implements LockStore {
       if (this.#isLockEntryExpired(lock)) lock.releaser?.()
 
       lock.releaser = await tryAcquire(lock.mutex).acquire()
+      lock.owner = owner
       lock.expiresAt = this.#computeExpiresAt(ttl)
 
       return true

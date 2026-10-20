@@ -15,3 +15,11 @@ export const E_LOCK_STORAGE_ERROR = createError<[{ message: string }]>(
   'Lock storage error: %s',
   'E_LOCK_STORAGE_ERROR',
 )
+
+/**
+ * Thrown when acquiring a lock after shutdown has started.
+ */
+export const E_SHUTDOWN = createError(
+  'Cannot acquire locks after shutdown has started',
+  'E_SHUTDOWN',
+)

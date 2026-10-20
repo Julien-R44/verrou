@@ -1,7 +1,8 @@
 import { noopLogger, type Logger } from '@julr/utils/logger'
 
+import { E_SHUTDOWN } from './errors.js'
 import { LockFactory } from './lock_factory.js'
-import type { Duration, SerializedLock, StoreFactory } from './types/main.js'
+import type { Duration, SerializedLock, ShutdownOptions, StoreFactory } from './types/main.js'
 
 /**
  * Verrou provides a lock management for multiple stores.
@@ -24,6 +25,8 @@ export class Verrou<KnownStores extends Record<string, StoreFactory>> {
    */
   #storesCache: Map<keyof KnownStores, LockFactory> = new Map()
 
+  #shutdown?: Promise<void>
+
   /**
    * Logger instance
    */
@@ -45,6 +48,8 @@ export class Verrou<KnownStores extends Record<string, StoreFactory>> {
     if (this.#storesCache.has(storeToUse)) {
       return this.#storesCache.get(storeToUse)!
     }
+
+    if (this.#shutdown) throw new E_SHUTDOWN()
 
     const factory = new LockFactory(this.#stores[storeToUse]!.driver.factory(), {
       logger: this.#logger,
@@ -69,5 +74,21 @@ export class Verrou<KnownStores extends Record<string, StoreFactory>> {
    */
   restoreLock(lock: SerializedLock) {
     return this.use(this.#defaultStoreName).restoreLock(lock)
+  }
+
+  /**
+   * Shut down every initialized store, including non-default stores.
+   * Unused stores are not initialized. Connections remain open.
+   */
+  shutdown(options: ShutdownOptions = {}) {
+    if (this.#shutdown) return this.#shutdown
+    const shutdowns = [...this.#storesCache.values()].map((factory) => factory.shutdown(options))
+    this.#shutdown = Promise.allSettled(shutdowns).then((results) => {
+      const errors = results.flatMap((result) =>
+        result.status === 'rejected' ? [result.reason] : [],
+      )
+      if (errors.length) throw new AggregateError(errors, 'Failed to shut down lock stores')
+    })
+    return this.#shutdown
   }
 }

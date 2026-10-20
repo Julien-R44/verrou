@@ -354,6 +354,24 @@ export function registerStoreTestSuite(options: {
     assert.isTrue(await lock.isLocked())
   })
 
+  test('shutdown releases held locks, including locks without expiration', async ({ assert }) => {
+    const store = options.createStore()
+    const provider = new LockFactory(store)
+    await provider.createLock('expired', 10).acquire()
+    await sleep(30)
+    await provider.createLock('expired', null).acquireImmediately()
+    await provider.createLock('permanent', null).acquire()
+    await provider.createLock('temporary', '1m').acquireImmediately()
+
+    await provider.shutdown()
+
+    const nextProvider = new LockFactory(store)
+    assert.isTrue(await nextProvider.createLock('expired', null).acquireImmediately())
+    assert.isTrue(await nextProvider.createLock('permanent', null).acquireImmediately())
+    assert.isTrue(await nextProvider.createLock('temporary', '1m').acquireImmediately())
+    await nextProvider.shutdown()
+  })
+
   test('forceRelease allows to release a lock that is not acquired by you', async ({ assert }) => {
     const provider = new LockFactory(options.createStore())
     const lock = provider.createLock('foo')
