@@ -1,6 +1,7 @@
 import { setTimeout } from 'node:timers/promises'
 import { InvalidArgumentsException } from '@poppinss/utils/exceptions'
 
+import { E_LOCK_NOT_OWNED } from './errors.js'
 import { resolveDuration } from './helpers.js'
 import type {
   Duration,
@@ -163,6 +164,20 @@ export class Lock {
   async release() {
     await this.#lockStore.delete(this.#key, this.#owner)
     this.#config.logger.debug({ key: this.#key }, 'Lock released')
+  }
+
+  /**
+   * Release the lock when used with `await using`. Unlike `release()`, it
+   * does not throw if the lock is not owned by this instance (never acquired,
+   * already released, or expired and acquired by someone else)
+   */
+  async [Symbol.asyncDispose]() {
+    try {
+      await this.release()
+    } catch (error) {
+      if (error instanceof E_LOCK_NOT_OWNED) return
+      throw error
+    }
   }
 
   /**

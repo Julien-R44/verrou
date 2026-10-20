@@ -90,6 +90,24 @@ What happens here ?
 
 As you can see, this is a bit more concise than the manual way.
 
+### Using `await using`
+
+Locks implement [explicit resource management](https://github.com/tc39/proposal-explicit-resource-management) through `Symbol.asyncDispose`. Declare a lock with `await using` and it will be released automatically when the enclosing block exits, even if your code throws.
+
+```ts
+import { verrou } from './verrou.js'
+
+async function doWork() {
+  await using lock = verrou.createLock('my-resource', '2s')
+  if (!(await lock.acquire())) return 'Lock not acquired'
+
+  // Do your critical code here
+  doSomething()
+} // Lock is released here
+```
+
+`acquire` still returns a boolean, so always check it. At the end of the block, the lock is released only if it is owned by this instance: if it was never acquired, already released, or expired and acquired by someone else, nothing happens and no error is thrown.
+
 ### Acquiring a lock with a custom timeout/retry policy
 
 The logic for acquiring a lock is simple : basically just try and try again until the lock is acquired. So you can specify some options to the `acquire` or `run` method to specify a timeout before acquiring the lock, or a maximum retry count.

@@ -57,6 +57,19 @@ await lock.acquire()
 await lock.release()
 ```
 
+### `[Symbol.asyncDispose]`
+
+Release the lock if it is owned by this instance. Called automatically when the lock is declared with `await using`. Unlike `release`, it does not throw `E_LOCK_NOT_OWNED` if the lock was never acquired, already released, or is now owned by someone else.
+
+```ts
+{
+  await using lock = verrou.createLock('key')
+  if (await lock.acquire()) {
+    // do something
+  }
+} // lock is released here
+```
+
 ### `run`
 
 Acquire the lock, run the callback, and release the lock. The method will return a tuple with the first value being a boolean indicating if the lock was acquired or not, and the second value being the result of the callback.

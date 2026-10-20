@@ -73,6 +73,43 @@ export function registerStoreTestSuite(options: {
     // @ts-expect-error poppinss/utils typing bug
   }).throws(E_LOCK_NOT_OWNED.message, E_LOCK_NOT_OWNED)
 
+  test('await using releases the lock at the end of the block', async ({ assert }) => {
+    const provider = new LockFactory(options.createStore())
+
+    {
+      await using lock = provider.createLock('foo')
+      assert.isTrue(await lock.acquire())
+      assert.isTrue(await lock.isLocked())
+    }
+
+    assert.isFalse(await provider.createLock('foo').isLocked())
+  })
+
+  test('await using does not release a lock owned by someone else', async ({ assert }) => {
+    const provider = new LockFactory(options.createStore(), { retry: { attempts: 1 } })
+    const lock = provider.createLock('foo')
+    await lock.acquire()
+
+    {
+      await using lock2 = provider.createLock('foo')
+      assert.isFalse(await lock2.acquire())
+    }
+
+    assert.isTrue(await lock.isLocked())
+    await lock.release()
+  })
+
+  test('await using does not throw if the lock was already released', async ({ assert }) => {
+    const provider = new LockFactory(options.createStore())
+
+    {
+      await using lock = provider.createLock('foo')
+      await lock.run(async () => {})
+    }
+
+    assert.isFalse(await provider.createLock('foo').isLocked())
+  })
+
   test('acquire returns false when lock is not acquired in time', async ({ assert }) => {
     const provider = new LockFactory(options.createStore(), {
       retry: { timeout: 500 },
