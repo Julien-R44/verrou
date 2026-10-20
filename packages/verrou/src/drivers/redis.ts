@@ -1,7 +1,5 @@
-import type { Redis as IoRedis } from 'ioredis'
-
 import { E_LOCK_NOT_OWNED } from '../errors.js'
-import type { LockStore, RedisStoreOptions } from '../types/main.js'
+import type { LockStore, RedisConnection, RedisStoreOptions } from '../types/main.js'
 
 /**
  * Create a new Redis store
@@ -14,7 +12,7 @@ export class RedisStore implements LockStore {
   /**
    * IORedis connection instance
    */
-  #connection: IoRedis
+  #connection: RedisConnection
 
   constructor(options: RedisStoreOptions) {
     this.#connection = options.connection

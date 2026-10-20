@@ -8,7 +8,7 @@ Verrou supports multiple drivers to store the locks. No matter which driver you 
 
 ## Redis
 
-You will need to install `ioredis` to use this driver.
+You will need to install `ioredis` to use this driver. Both ioredis v5 and v6 are supported. ioredis v6 requires Node.js 20 or newer.
 
 The Redis driver can be used with many different providers:
 
@@ -55,7 +55,7 @@ const lockFactory = new LockFactory(store)
 
 | Option       | Description              | Default |
 |--------------|--------------------------|---------|
-| `connection` | An instance of `ioredis` | N/A     |
+| `connection` | An ioredis `Redis` or `Cluster` instance | N/A     |
 
 ### Implementation details
 
