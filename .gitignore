@@ -11,6 +11,7 @@ cache.sqlite3
 docs/public/hot
 docs/public/build
 docs/public/assets
+docs/.adonisjs
 
 # Build tools specific
 npm-debug.log

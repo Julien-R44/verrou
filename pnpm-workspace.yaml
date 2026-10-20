@@ -3,3 +3,12 @@ packages:
   - playground
   - apps/*
   - docs
+
+overrides:
+  tsx: ^4.23.15
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - better-sqlite3
+  - esbuild
+  - sqlite3

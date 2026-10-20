@@ -37,6 +37,8 @@
   --code-highlight-border-color: var(--amber-11);
   --sidebar-loading-link-bg-color: var(--amber-a3);
   --docsearch-primary-color: var(--amber-9);
+  --docsearch-highlight-color: var(--amber-11);
+  --docsearch-hit-focus-background: var(--mauve-6);
 }
 
 html.dark {
@@ -80,4 +82,3 @@ html.dark {
 .markdown .table_container {
   overflow-x: auto;
 }
-

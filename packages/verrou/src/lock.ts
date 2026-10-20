@@ -1,5 +1,5 @@
 import { setTimeout } from 'node:timers/promises'
-import { InvalidArgumentsException } from '@poppinss/utils/exceptions'
+import { InvalidArgumentsException } from '@poppinss/utils/exception'
 
 import { E_LOCK_NOT_OWNED } from './errors.js'
 import { resolveDuration } from './helpers.js'

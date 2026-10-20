@@ -10,30 +10,41 @@
     "node": ">=18.16.0"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "typecheck": "tsc --noEmit",
     "checks": "pnpm lint && pnpm typecheck"
   },
   "devDependencies": {
-    "@adonisjs/tsconfig": "^1.4.1",
-    "@japa/assert": "^4.1.1",
-    "@japa/expect-type": "^2.0.3",
-    "@japa/file-system": "^2.3.2",
-    "@japa/runner": "^4.4.0",
-    "@julr/tooling-configs": "^4.0.0",
-    "@swc/core": "^1.15.3",
-    "@types/node": "^24.10.1",
-    "c8": "^10.1.3",
+    "@adonisjs/tsconfig": "^2.0.0",
+    "@japa/assert": "^4.2.0",
+    "@japa/expect-type": "^2.0.4",
+    "@japa/file-system": "^3.0.0",
+    "@japa/runner": "^5.4.0",
+    "@julr/tooling-configs": "^6.1.2",
+    "@swc/core": "^1.16.18",
+    "@types/node": "^26.6.5",
+    "c8": "^12.0.0",
     "copyfiles": "^2.4.1",
     "cross-env": "^10.1.0",
-    "del-cli": "^7.0.0",
-    "dotenv": "^17.2.3",
-    "eslint": "^9.39.1",
-    "prettier": "^3.7.4",
-    "release-it": "^19.0.6",
+    "del-cli": "^8.0.1",
+    "dotenv": "^18.0.8",
+    "eslint-plugin-perfectionist": "^5.12.1",
+    "oxlint": "^1.89.0",
+    "prettier": "^3.9.10",
+    "release-it": "^21.1.1",
     "ts-node": "^10.9.2",
-    "tsup": "^8.5.1",
-    "typescript": "~5.9.3"
+    "tsup": "^9.0.0",
+    "typescript": "~6.0.3"
   },
-  "prettier": "@julr/tooling-configs/prettier"
+  "prettier": {
+    "trailingComma": "all",
+    "semi": false,
+    "singleQuote": true,
+    "useTabs": false,
+    "quoteProps": "consistent",
+    "bracketSpacing": true,
+    "arrowParens": "always",
+    "printWidth": 100,
+    "htmlWhitespaceSensitivity": "ignore"
+  }
 }

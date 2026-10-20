@@ -13,6 +13,7 @@ import 'reflect-metadata'
 
 import { Ignitor } from '@adonisjs/core'
 import { defineConfig } from '@adonisjs/vite'
+import { drivers, defineConfig as defineEncryptionConfig } from '@adonisjs/core/encryption'
 
 /**
  * URL to the application root. AdonisJS need it to resolve
@@ -45,7 +46,9 @@ async function exportHTML() {
         const output = await entry.writeToDisk(app.makePath('dist'), { collection, entry })
         ace.ui.logger.action(`create ${output.filePath}`).succeeded()
       } catch (error) {
-        ace.ui.logger.action(`create ${entry.permalink}`).failed(error)
+        ace.ui.logger
+          .action(`create ${entry.permalink}`)
+          .failed(error instanceof Error ? error : String(error))
       }
     }
   }
@@ -57,9 +60,14 @@ const app = new Ignitor(APP_ROOT, { importer: IMPORTER })
       app.useConfig({
         appUrl: process.env.APP_URL || '',
         app: {
-          appKey: 'zKXHe-Ahdb7aPK1ylAJlRgTefktEaACi',
           http: {},
         },
+        encryption: defineEncryptionConfig({
+          default: 'app',
+          list: {
+            app: drivers.legacy({ keys: ['zKXHe-Ahdb7aPK1ylAJlRgTefktEaACi'] }),
+          },
+        }),
         logger: {
           default: 'app',
           loggers: {

@@ -21,6 +21,10 @@ import.meta.glob([
 Alpine.plugin(tabs)
 Alpine.plugin(Persist)
 Alpine.plugin(initBaseComponents)
-Alpine.plugin(initSearchComponent(docsearch))
+Alpine.plugin(
+  initSearchComponent(({ indexName, ...options }) =>
+    docsearch({ ...options, indices: [indexName] }),
+  ),
+)
 Alpine.plugin(initZoomComponent(mediumZoom))
 Alpine.start()
